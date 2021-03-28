@@ -1,0 +1,9 @@
+server:
+  port: 8763
+  servlet:
+    context-path: /filesystem
+spring:
+  application:
+    name: file-system
+  profiles:
+    active: dev
