@@ -5,3 +5,13 @@ spring:
     name: gateway
   profiles:
     active: dev
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: stardon-main
+          uri: http://localhost:8701
+          predicates:
+            - Path=/stardon-main/**
