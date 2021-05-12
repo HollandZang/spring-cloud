@@ -19,7 +19,7 @@ public class GlobalExceptionHandle {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(e.getClass().getName() + ":\t" + e.getMessage());
+                .body("服务器异常");
     }
 
     @ExceptionHandler(value = BindException.class)
@@ -29,7 +29,7 @@ public class GlobalExceptionHandle {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(e.getClass().getName() + ":\t" + e.getMessage());
+                .body("参数解析异常");
     }
 }
 

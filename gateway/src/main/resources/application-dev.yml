@@ -1,4 +1,23 @@
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://root:root@localhost:8700/eureka/
+      defaultZone: http://root:root@11.101.2.195:8761/eureka/
+#      defaultZone: http://root:root@localhost:8700/eureka/
+logging:
+  level:
+    com.holland.gateway.GatewayFilter: debug
+spring:
+  redis:
+    host: 11.101.2.195
+    port: 6379
+    password: scxd@123
+    token-timeout: 10
+    token-key-prefix: "holland:"
+  cache:
+    redis:
+      use-key-prefix: false
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://119.23.68.6:5432/yjg
+    username: postgres
+    password: 8DFn32P@$*,e!6
