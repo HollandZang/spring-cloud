@@ -1,25 +1,24 @@
 package com.holland.gateway;
 
+import com.holland.gateway.route_white_list.RouteWhitelistMapper;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class CustomCache {
-    @Resource
-    private RouteWhitelistRepo routeWhitelistRepo;
 
-    public static final List<String> URL_NOT_NEED_TOKEN = new ArrayList<>();
+    @Resource
+    private RouteWhitelistMapper routeWhitelistMapper;
+
+    public static final Set<String> URL_NOT_NEED_TOKEN = new HashSet<>();
 
     @PostConstruct
     public void init() {
-        System.out.println("INIT");
-        URL_NOT_NEED_TOKEN.add("/filesystem/test");
-        final Iterable<Object> all = routeWhitelistRepo.findAll();
-        all.forEach(System.out::println);
+        URL_NOT_NEED_TOKEN.addAll(routeWhitelistMapper.findAllEnabled());
     }
 
 }

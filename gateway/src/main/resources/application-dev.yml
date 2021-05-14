@@ -6,6 +6,7 @@ eureka:
 logging:
   level:
     com.holland.gateway.GatewayFilter: debug
+    com.holland.gateway.route_white_list.RouteWhitelistMapper: debug
 spring:
   redis:
     host: 11.101.2.195
@@ -18,6 +19,6 @@ spring:
       use-key-prefix: false
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://119.23.68.6:5432/yjg
+    url: jdbc:postgresql://119.23.68.6:5432/config
     username: postgres
     password: 8DFn32P@$*,e!6
