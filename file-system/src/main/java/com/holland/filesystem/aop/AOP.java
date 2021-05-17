@@ -32,7 +32,8 @@ public class AOP {
 
     @AfterReturning(value = "pointCut()", returning = "result")
     public void doAfter(JoinPoint joinPoint, Object result) {
-//        Response response = (Response) result;
+        System.out.println("doAfter");
+ //        Response response = (Response) result;
 
         //请求的参数     /*序列化时过滤掉request和response*/     /*过滤掉文件*/
         final Object[] args = joinPoint.getArgs();
@@ -65,6 +66,7 @@ public class AOP {
 
     @AfterThrowing(value = "pointCut()", throwing = "e")
     public void doOnException(JoinPoint joinPoint, Exception e) throws Exception {
+        System.out.println("doOnException");
         //请求的参数     /*序列化时过滤掉request和response*/     /*过滤掉文件*/
         final Object[] args = joinPoint.getArgs();
         final String[] parameterNames = ((MethodSignature) joinPoint.getSignature()).getParameterNames();

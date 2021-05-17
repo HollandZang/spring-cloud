@@ -1,4 +1,4 @@
-package com.holland.filesystem.controller;
+package com.holland.gateway;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -11,6 +11,6 @@ public class TestController {
 
     @GetMapping()
     public ResponseEntity<?> test() {
-        return ResponseEntity.ok("file_system::OK");
+        return ResponseEntity.ok("gateway::OK");
     }
 }

@@ -18,7 +18,7 @@ public class CustomCache {
 
     @PostConstruct
     public void init() {
-        URL_NOT_NEED_TOKEN.addAll(routeWhitelistMapper.findAllEnabled());
+//        URL_NOT_NEED_TOKEN.addAll(routeWhitelistMapper.findAllEnabled());
     }
 
 }

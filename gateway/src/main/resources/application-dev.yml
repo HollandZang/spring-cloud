@@ -1,11 +1,11 @@
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://root:root@11.101.2.195:8761/eureka/
-#      defaultZone: http://root:root@localhost:8700/eureka/
+      defaultZone: http://root:root@localhost:8761/eureka/
 logging:
   level:
     com.holland.gateway.GatewayFilter: debug
+    com.holland.gateway.CustomWebFilterChain: debug
     com.holland.gateway.route_white_list.RouteWhitelistMapper: debug
 spring:
   redis:

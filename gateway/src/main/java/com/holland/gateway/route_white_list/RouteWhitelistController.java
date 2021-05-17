@@ -9,7 +9,7 @@ import javax.annotation.Resource;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/config")
+@RequestMapping("/route/whitelist")
 public class RouteWhitelistController {
 
     @Resource

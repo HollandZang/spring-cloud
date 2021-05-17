@@ -9,28 +9,20 @@ import org.springframework.cloud.gateway.filter.NettyWriteResponseFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
-@Component
+//@Component
 public class GatewayFilter implements GlobalFilter, Ordered {
 
     private final Logger logger = LoggerFactory.getLogger(GatewayFilter.class);
-
-    @Resource
-    private RedisUtil redisUtil;
 
     @Override
     public int getOrder() {
@@ -44,29 +36,7 @@ public class GatewayFilter implements GlobalFilter, Ordered {
 
         logger.debug("{} {}", request.getMethod(), request.getURI());
 
-        final List<String> tokens = request.getHeaders().get("holland_token");
-        final String token;
-        if (!CollectionUtils.isEmpty(tokens) && tokens.size() >= 1 && StringUtils.hasText(tokens.get(0))) {
-            token = tokens.get(0);
-        } else {
-            token = null;
-        }
-
-        final boolean notNeedToken = CustomCache.URL_NOT_NEED_TOKEN.stream().anyMatch(it -> it.equals(request.getURI().getRawPath()));
         final ServerHttpResponse originalResponse = exchange.getResponse();
-
-        //token验证: 需要token的接口没传token
-        if (!notNeedToken || token == null) {
-            originalResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
-            return originalResponse.setComplete();
-        }
-        //token验证: token有效性
-        final Object auth = redisUtil.getToken(token);
-        if (auth == null) {
-            originalResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
-            return originalResponse.setComplete();
-        }
-
         final ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(originalResponse) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
