@@ -1,5 +1,7 @@
 package com.holland.gateway.route_white_list;
 
+import com.holland.gateway.common.CustomCache;
+import com.holland.gateway.common.ValidateUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,30 +17,38 @@ public class RouteWhitelistController {
     @Resource
     private RouteWhitelistMapper routeWhitelistMapper;
 
+    @Resource
+    private CustomCache customCache;
+
+    @GetMapping("/refresh")
+    public ResponseEntity<?> refresh() {
+        customCache.init();
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping
     public ResponseEntity<?> add(@RequestBody RouteWhitelist routeWhitelist) {
-        if (routeWhitelist.getUrl() == null || routeWhitelist.getUrl().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("url不能为空");
-        }
+        ValidateUtil.validateNotEmpty(routeWhitelist.getUrl(), "url");
+        ValidateUtil.validateLength(routeWhitelist.getUrl(), 256, "url");
+
         final Optional<RouteWhitelist> optional = routeWhitelistMapper.getByUrl(routeWhitelist.getUrl());
         if (optional.isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("url已存在");
         }
         final int row = routeWhitelistMapper.insert(routeWhitelist);
+        customCache.init();
         return ResponseEntity.ok(row);
     }
 
     @PutMapping
     public ResponseEntity<?> update(@RequestBody RouteWhitelist routeWhitelist) {
-        if ((routeWhitelist.getUrl() == null || routeWhitelist.getUrl().isEmpty())
-                && (routeWhitelist.getEnabled() == null)) {
-            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("接受参数为空");
-        }
+        ValidateUtil.validateLength(routeWhitelist.getUrl(), 256, "url");
 
         final int row = routeWhitelistMapper.update(routeWhitelist);
         if (row == 0) {
             return ResponseEntity.status(HttpStatus.GONE).body("资源不存在");
         }
+        customCache.init();
         return ResponseEntity.ok(row);
     }
 
@@ -48,6 +58,7 @@ public class RouteWhitelistController {
         if (row == 0) {
             return ResponseEntity.status(HttpStatus.GONE).body("资源不存在");
         }
+        customCache.init();
         return ResponseEntity.ok(row);
     }
 }

@@ -1,4 +1,4 @@
-package com.holland.gateway;
+package com.holland.gateway.filter;
 
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -12,7 +12,6 @@ import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
-import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

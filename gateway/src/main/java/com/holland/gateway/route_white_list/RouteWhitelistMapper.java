@@ -8,7 +8,7 @@ import java.util.Optional;
 @Mapper
 public interface RouteWhitelistMapper {
 
-    @Select("select url from config.public.route_whitelist where enabled = true")
+    @Select("select url from route_whitelist where enabled = true")
     List<String> findAllEnabled();
 
     @InsertProvider(type = RouteWhitelistSqlFactory.class, method = "insert")
@@ -17,9 +17,9 @@ public interface RouteWhitelistMapper {
     @UpdateProvider(type = RouteWhitelistSqlFactory.class, method = "update")
     int update(RouteWhitelist routeWhitelist);
 
-    @Delete("delete from config.public.route_whitelist where id = #{id}")
+    @Delete("delete from route_whitelist where id = #{id}")
     int del(Integer id);
 
-    @Select("select id, url, enabled from config.public.route_whitelist where url = #{url}")
+    @Select("select id, url, enabled from route_whitelist where url = #{url}")
     Optional<RouteWhitelist> getByUrl(String url);
 }

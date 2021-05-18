@@ -1,5 +1,7 @@
-package com.holland.gateway;
+package com.holland.gateway.filter;
 
+import com.holland.gateway.common.CustomCache;
+import com.holland.gateway.common.RedisUtil;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
@@ -31,6 +34,9 @@ public class CustomWebFilterChain {
     @Resource
     private RedisUtil redisUtil;
 
+    @Resource
+    private CustomCache customCache;
+
     private final Logger logger = LoggerFactory.getLogger(CustomWebFilterChain.class);
 
     @Bean
@@ -54,20 +60,24 @@ public class CustomWebFilterChain {
                 token = null;
             }
 
-            final boolean notNeedToken = CustomCache.URL_NOT_NEED_TOKEN.stream().anyMatch(it -> it.equals(request.getURI().getRawPath()));
+            /* 精确的路径匹配模式 */
+            final boolean notNeedToken = customCache.URL_NOT_NEED_TOKEN.stream().anyMatch(it -> it.equals(request.getURI().getRawPath()));
             final ServerHttpResponse originalResponse = exchange.getResponse();
 
-//            //token验证: 需要token的接口没传token
-//            if (!notNeedToken || token == null) {
-//                originalResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
-//                return originalResponse.setComplete();
-//            }
-//            //token验证: token有效性
-//            final Object auth = redisUtil.getToken(token);
-//            if (auth == null) {
-//                originalResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
-//                return originalResponse.setComplete();
-//            }
+            //token验证
+            if (!notNeedToken) {
+                //token验证: 需要token的接口没传token
+                if (token == null) {
+                    originalResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
+                    return originalResponse.setComplete();
+                }
+                //token验证: token有效性
+                final Object auth = redisUtil.getToken(token);
+                if (auth == null) {
+                    originalResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
+                    return originalResponse.setComplete();
+                }
+            }
             return chain.filter(exchange);
         };
     }

@@ -1,4 +1,4 @@
-package com.holland.gateway;
+package com.holland.gateway.common;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
