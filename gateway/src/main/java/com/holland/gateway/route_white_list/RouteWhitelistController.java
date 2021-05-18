@@ -28,8 +28,8 @@ public class RouteWhitelistController {
 
     @PostMapping
     public ResponseEntity<?> add(@RequestBody RouteWhitelist routeWhitelist) {
-        ValidateUtil.validateNotEmpty(routeWhitelist.getUrl(), "url");
-        ValidateUtil.validateLength(routeWhitelist.getUrl(), 256, "url");
+        ValidateUtil.notEmpty(routeWhitelist.getUrl(), "url");
+        ValidateUtil.maxLength(routeWhitelist.getUrl(), 256, "url");
 
         final Optional<RouteWhitelist> optional = routeWhitelistMapper.getByUrl(routeWhitelist.getUrl());
         if (optional.isPresent()) {
@@ -42,7 +42,7 @@ public class RouteWhitelistController {
 
     @PutMapping
     public ResponseEntity<?> update(@RequestBody RouteWhitelist routeWhitelist) {
-        ValidateUtil.validateLength(routeWhitelist.getUrl(), 256, "url");
+        ValidateUtil.maxLength(routeWhitelist.getUrl(), 256, "url");
 
         final int row = routeWhitelistMapper.update(routeWhitelist);
         if (row == 0) {

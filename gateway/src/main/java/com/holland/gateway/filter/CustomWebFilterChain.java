@@ -102,6 +102,17 @@ public class CustomWebFilterChain {
                                             String respBody = dataBuffer.toString(StandardCharsets.UTF_8);
                                             //输出body
                                             logger.debug("Response : status = {}, body = {}", exchange.getResponse().getStatusCode().toString(), respBody);
+
+                                            switch (request.getURI().getRawPath()) {
+                                                case "/user/login":
+                                                    logLogin(request, originalResponse.getStatusCode(), respBody);
+                                                    break;
+                                                case "/user/logout":
+                                                    logLogout(request, originalResponse.getStatusCode(), respBody);
+                                                    break;
+                                                default:
+                                                    log(request, originalResponse.getStatusCode(), respBody);
+                                            }
                                         })
                         );
                         return newMono;
@@ -111,5 +122,30 @@ public class CustomWebFilterChain {
             };
             return chain.filter(exchange.mutate().response(decoratedResponse).build());
         };
+    }
+
+    private void log(ServerHttpRequest request, HttpStatus statusCode, String respBody) {
+        final String loginName = request.getHeaders().getFirst("holland_token");
+        final String type = request.getMethodValue();
+        final String api = request.getURI().getRawPath();
+        //ip
+        request.getQueryParams();
+        final int result = statusCode.value();
+
+    }
+
+    private void logLogin(ServerHttpRequest request, HttpStatus statusCode, String respBody) {
+        final String loginName = request.getQueryParams().getFirst("loginName");
+        final String from = request.getQueryParams().getFirst("from");
+        final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
+        final int result = statusCode.value();
+
+    }
+
+    private void logLogout(ServerHttpRequest request, HttpStatus statusCode, String respBody) {
+        final String loginName = request.getHeaders().getFirst("holland_token");
+        //ip
+        final int result = statusCode.value();
+
     }
 }

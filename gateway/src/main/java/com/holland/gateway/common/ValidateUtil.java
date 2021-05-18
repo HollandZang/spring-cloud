@@ -5,13 +5,13 @@ import java.util.Formatter;
 
 public class ValidateUtil {
 
-    public static void validateNotEmpty(Object field, String fieldName) {
+    public static void notEmpty(Object field, String fieldName) {
         if (field == null || field.toString().isBlank()) {
             ParameterException.runException("字段[%s]不能为空", fieldName);
         }
     }
 
-    public static void validateLength(Long field, int maxLen, String fieldName) {
+    public static void maxLength(Long field, int maxLen, String fieldName) {
         if (field == null) {
             return;
         }
@@ -20,7 +20,7 @@ public class ValidateUtil {
         }
     }
 
-    public static void validateLength(String field, int maxLen, String fieldName) {
+    public static void maxLength(String field, int maxLen, String fieldName) {
         if (field == null) {
             return;
         }

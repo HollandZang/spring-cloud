@@ -33,10 +33,10 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody JSONObject o) {
         final String loginName = o.getString("loginName");
         final String password = o.getString("password");
-        final String software = o.getString("software");    /*指明通过什么软件、项目登录*/
-        ValidateUtil.validateNotEmpty(loginName, "用户名");
-        ValidateUtil.validateNotEmpty(password, "密码");
-        ValidateUtil.validateNotEmpty(software, "software");
+        final String from = o.getString("from");    /*指明通过什么软件、项目登录*/
+        ValidateUtil.notEmpty(loginName, "用户名");
+        ValidateUtil.notEmpty(password, "密码");
+        ValidateUtil.notEmpty(from, "from");
 
         final Optional<User> optional = userMapper.getByLoginName(loginName);
         if (optional.isEmpty()) {
@@ -55,10 +55,10 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<?> add(@RequestBody User user) {
-        ValidateUtil.validateNotEmpty(user.getLoginName(), "用户名");
-        ValidateUtil.validateLength(user.getLoginName(), 16, "用户名");
-        ValidateUtil.validateNotEmpty(user.getPassword(), "密码");
-        ValidateUtil.validateLength(user.getPassword(), 16, "密码");
+        ValidateUtil.notEmpty(user.getLoginName(), "用户名");
+        ValidateUtil.maxLength(user.getLoginName(), 16, "用户名");
+        ValidateUtil.notEmpty(user.getPassword(), "密码");
+        ValidateUtil.maxLength(user.getPassword(), 16, "密码");
 
         final String encode = encoder.encode(user.getPassword());
         final LocalDateTime now = LocalDateTime.now();
@@ -71,8 +71,8 @@ public class UserController {
 
     @PutMapping
     public ResponseEntity<?> update(@RequestBody User user) {
-        ValidateUtil.validateLength(user.getLoginName(), 16, "用户名");
-        ValidateUtil.validateLength(user.getPassword(), 16, "密码");
+        ValidateUtil.maxLength(user.getLoginName(), 16, "用户名");
+        ValidateUtil.maxLength(user.getPassword(), 16, "密码");
 
         if (StringUtils.hasText(user.getPassword())) {
             user.setPassword(encoder.encode(user.getPassword()));
