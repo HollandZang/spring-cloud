@@ -6,8 +6,7 @@ logging:
   level:
     com.holland.gateway.filter.GatewayFilter: debug
     com.holland.gateway.filter.CustomWebFilterChain: debug
-    com.holland.gateway.route_white_list.RouteWhitelistMapper: debug
-    com.holland.gateway.user.UserMapper: debug
+    com.holland.gateway.mapper.RouteWhitelistMapper: debug
 spring:
   redis:
     host: 11.101.2.195

@@ -41,11 +41,11 @@ insert into "user"(login_name, password) values ('root', '$2a$08$t3mLhRGLQLUSMKc
 -- 登录日志
 CREATE TABLE log_login (
                      id serial NOT NULL,
-                     operate_user int NOT NULL,
+                     operate_user varchar(16),
                      operate_time timestamp NOT NULL,
                      operate_type char(1) NOT NULL,
                      "from" varchar(256) NOT NULL,
-                     ip varchar(15) DEFAULT NULL,
+                     ip varchar(30) DEFAULT NULL,
                      result int DEFAULT NULL,
                      response varchar(1024) DEFAULT NULL,
                      PRIMARY KEY (id)
@@ -60,11 +60,11 @@ comment on column log_login.ip is 'ip来源';
 -- 操作日志
 CREATE TABLE log (
                      id serial NOT NULL,
-                     operate_user int NOT NULL,
+                     operate_user varchar(16),
                      operate_time timestamp NOT NULL,
                      operate_type varchar(10) NOT NULL,
                      operate_api varchar(128) NOT NULL,
-                     ip varchar(15) DEFAULT NULL,
+                     ip varchar(30) DEFAULT NULL,
                      param varchar(1024) DEFAULT NULL,
                      result int DEFAULT NULL,
                      response varchar(1024) DEFAULT NULL,

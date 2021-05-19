@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.holland.gateway.mapper.LogLoginMapper">
+
+    <resultMap id="BaseResultMap" type="com.holland.gateway.domain.LogLogin">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="operateUser" column="operate_user" jdbcType="INTEGER"/>
+            <result property="operateTime" column="operate_time" jdbcType="TIMESTAMP"/>
+            <result property="operateType" column="operate_type" jdbcType="CHAR"/>
+            <result property="from" column="from" jdbcType="VARCHAR"/>
+            <result property="ip" column="ip" jdbcType="VARCHAR"/>
+            <result property="result" column="result" jdbcType="INTEGER"/>
+            <result property="response" column="response" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,operate_user,operate_time,
+        operate_type,from,ip,
+        result,response
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from log_login
+        where  id = #{id,jdbcType=INTEGER} 
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from log_login
+        where  id = #{id,jdbcType=INTEGER} 
+    </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.holland.gateway.domain.LogLogin" useGeneratedKeys="true">
+        insert into log_login
+        ( id,operate_user,operate_time
+        ,operate_type,from,ip
+        ,result,response)
+        values (#{id,jdbcType=INTEGER},#{operateUser,jdbcType=VARCHAR},#{operateTime,jdbcType=TIMESTAMP}
+        ,#{operateType,jdbcType=CHAR},#{from,jdbcType=VARCHAR},#{ip,jdbcType=VARCHAR}
+        ,#{result,jdbcType=INTEGER},#{response,jdbcType=VARCHAR}))
+    </insert>
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.holland.gateway.domain.LogLogin" useGeneratedKeys="true">
+        insert into log_login
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">id,</if>
+                <if test="operateUser != null">operate_user,</if>
+                <if test="operateTime != null">operate_time,</if>
+                <if test="operateType != null">operate_type,</if>
+                <if test="operateApi != null">operate_api,</if>
+                <if test="from != null">from,</if>
+                <if test="ip != null">ip,</if>
+                <if test="result != null">result,</if>
+                <if test="response != null">response,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">id = #{id,jdbcType=INTEGER},</if>
+                <if test="operateUser != null">operate_user = #{operateUser,jdbcType=VARCHAR},</if>
+                <if test="operateTime != null">operate_time = #{operateTime,jdbcType=TIMESTAMP},</if>
+                <if test="operateType != null">operate_type = #{operateType,jdbcType=CHAR},</if>
+                <if test="from != null">from = #{from,jdbcType=VARCHAR},</if>
+                <if test="ip != null">ip = #{ip,jdbcType=VARCHAR},</if>
+                <if test="result != null">result = #{result,jdbcType=INTEGER},</if>
+                <if test="response != null">response = #{response,jdbcType=VARCHAR},</if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.holland.gateway.domain.LogLogin">
+        update log_login
+        <set>
+                <if test="operateUser != null">
+                    operate_user = #{operateUser,jdbcType=VARCHAR},
+                </if>
+                <if test="operateTime != null">
+                    operate_time = #{operateTime,jdbcType=TIMESTAMP},
+                </if>
+                <if test="operateType != null">
+                    operate_type = #{operateType,jdbcType=CHAR},
+                </if>
+                <if test="from != null">
+                    from = #{from,jdbcType=VARCHAR},
+                </if>
+                <if test="ip != null">
+                    ip = #{ip,jdbcType=VARCHAR},
+                </if>
+                <if test="result != null">
+                    result = #{result,jdbcType=INTEGER},
+                </if>
+                <if test="response != null">
+                    response = #{response,jdbcType=VARCHAR},
+                </if>
+        </set>
+        where   id = #{id,jdbcType=INTEGER} 
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.holland.gateway.domain.LogLogin">
+        update log_login
+        set 
+            operate_user =  #{operateUser,jdbcType=VARCHAR},
+            operate_time =  #{operateTime,jdbcType=TIMESTAMP},
+            operate_type =  #{operateType,jdbcType=CHAR},
+            from =  #{from,jdbcType=VARCHAR},
+            ip =  #{ip,jdbcType=VARCHAR},
+            result =  #{result,jdbcType=INTEGER},
+            response =  #{response,jdbcType=VARCHAR}
+        where   id = #{id,jdbcType=INTEGER} 
+    </update>
+
+    <select id="count">
+        select count(1) from log_login
+    </select>
+    <select id="list" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from log_login
+        limit #{limit} offset #{offset}
+    </select>
+</mapper>

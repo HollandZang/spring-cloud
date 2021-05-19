@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.net.BindException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandle {
 
@@ -20,7 +22,7 @@ public class GlobalExceptionHandle {
                 .body("服务器异常");
     }
 
-    @ExceptionHandler(value = ValidateUtil.ParameterException.class)
+    @ExceptionHandler(value = {BindException.class, ValidateUtil.ParameterException.class})
     @ResponseBody
     public ResponseEntity<?> handleParameter(Exception e) {
         return ResponseEntity

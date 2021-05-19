@@ -1,13 +1,39 @@
-package com.holland.gateway.user;
+package com.holland.gateway.domain;
 
-import java.time.LocalDateTime;
+import java.io.Serializable;
+import java.util.Date;
 
-public class User {
+/**
+ * 用户信息表
+ * @TableName user
+ */
+public class User implements Serializable {
+    /**
+     * 
+     */
     private Integer id;
+
+    /**
+     * 
+     */
     private String loginName;
+
+    /**
+     * 
+     */
     private String password;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
+
+    /**
+     * 
+     */
+    private Date createTime;
+
+    /**
+     * 
+     */
+    private Date updateTime;
+
+    private static final long serialVersionUID = 1L;
 
     public Integer getId() {
         return id;
@@ -36,21 +62,25 @@ public class User {
         return this;
     }
 
-    public LocalDateTime getCreateTime() {
+    public Date getCreateTime() {
         return createTime;
     }
 
-    public User setCreateTime(LocalDateTime createTime) {
+    public User setCreateTime(Date createTime) {
         this.createTime = createTime;
         return this;
     }
 
-    public LocalDateTime getUpdateTime() {
+    public Date getUpdateTime() {
         return updateTime;
     }
 
-    public User setUpdateTime(LocalDateTime updateTime) {
+    public User setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
         return this;
+    }
+
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
     }
 }

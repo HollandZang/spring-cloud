@@ -13,7 +13,7 @@ import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-public class RedisUtil {
+public class RedisController {
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
@@ -22,12 +22,17 @@ public class RedisUtil {
     @Value("${spring.redis.token-key-prefix:holland}")
     private String tokenKeyPrefix;
 
-    public void setToken(String token, Object user) {
-        redisTemplate.opsForValue().set(tokenKeyPrefix + token, JSON.toJSONString(user), tokenTimeout, TimeUnit.MINUTES);
+    public void setToken(String loginName, Object user) {
+        redisTemplate.opsForValue().set(tokenKeyPrefix + loginName + DateUtil.getDateStr(), JSON.toJSONString(user), tokenTimeout, TimeUnit.MINUTES);
     }
 
     public Object getToken(String token) {
         return redisTemplate.opsForValue().get(tokenKeyPrefix + token);
+    }
+
+
+    public void delToken(String token) {
+        redisTemplate.delete(tokenKeyPrefix + token);
     }
 
     @Bean

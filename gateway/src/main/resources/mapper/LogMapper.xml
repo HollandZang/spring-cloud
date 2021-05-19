@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.holland.gateway.mapper.LogMapper">
+
+    <resultMap id="BaseResultMap" type="com.holland.gateway.domain.Log">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="operateUser" column="operate_user" jdbcType="VARCHAR"/>
+            <result property="operateTime" column="operate_time" jdbcType="TIMESTAMP"/>
+            <result property="operateType" column="operate_type" jdbcType="VARCHAR"/>
+            <result property="operateApi" column="operate_api" jdbcType="VARCHAR"/>
+            <result property="ip" column="ip" jdbcType="VARCHAR"/>
+            <result property="param" column="param" jdbcType="VARCHAR"/>
+            <result property="result" column="result" jdbcType="INTEGER"/>
+            <result property="response" column="response" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,operate_user,operate_time,
+        operate_type,operate_api,ip,
+        param,result,response
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from log
+        where  id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from log
+        where  id = #{id,jdbcType=INTEGER}
+    </delete>
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.holland.gateway.domain.Log" useGeneratedKeys="true">
+        insert into log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="operateUser != null">operate_user,</if>
+                <if test="operateTime != null">operate_time,</if>
+                <if test="operateType != null">operate_type,</if>
+                <if test="operateApi != null">operate_api,</if>
+                <if test="ip != null">ip,</if>
+                <if test="param != null">param,</if>
+                <if test="result != null">result,</if>
+                <if test="response != null">response,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="operateUser != null">#{operateUser,jdbcType=VARCHAR},</if>
+                <if test="operateTime != null">#{operateTime,jdbcType=TIMESTAMP},</if>
+                <if test="operateType != null">#{operateType,jdbcType=VARCHAR},</if>
+                <if test="operateApi != null">#{operateApi,jdbcType=VARCHAR},</if>
+                <if test="ip != null">#{ip,jdbcType=VARCHAR},</if>
+                <if test="param != null">#{param,jdbcType=VARCHAR},</if>
+                <if test="result != null">#{result,jdbcType=INTEGER},</if>
+                <if test="response != null">#{response,jdbcType=VARCHAR},</if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.holland.gateway.domain.Log">
+        update log
+        <set>
+                <if test="operateUser != null">
+                    operate_user = #{operateUser,jdbcType=VARCHAR},
+                </if>
+                <if test="operateTime != null">
+                    operate_time = #{operateTime,jdbcType=TIMESTAMP},
+                </if>
+                <if test="operateType != null">
+                    operate_type = #{operateType,jdbcType=VARCHAR},
+                </if>
+                <if test="operateApi != null">
+                    operate_api = #{operateApi,jdbcType=VARCHAR},
+                </if>
+                <if test="ip != null">
+                    ip = #{ip,jdbcType=VARCHAR},
+                </if>
+                <if test="param != null">
+                    param = #{param,jdbcType=VARCHAR},
+                </if>
+                <if test="result != null">
+                    result = #{result,jdbcType=INTEGER},
+                </if>
+                <if test="response != null">
+                    response = #{response,jdbcType=VARCHAR},
+                </if>
+        </set>
+        where   id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.holland.gateway.domain.Log">
+        update log
+        set
+            operate_user =  #{operateUser,jdbcType=VARCHAR},
+            operate_time =  #{operateTime,jdbcType=TIMESTAMP},
+            operate_type =  #{operateType,jdbcType=VARCHAR},
+            operate_api =  #{operateApi,jdbcType=VARCHAR},
+            ip =  #{ip,jdbcType=VARCHAR},
+            param =  #{param,jdbcType=VARCHAR},
+            result =  #{result,jdbcType=INTEGER},
+            response =  #{response,jdbcType=VARCHAR}
+        where   id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <select id="count">
+        select count(1) from log
+    </select>
+    <select id="list" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from log
+        limit #{limit} offset #{offset}
+    </select>
+</mapper>
