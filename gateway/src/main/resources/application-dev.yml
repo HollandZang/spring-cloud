@@ -1,7 +1,7 @@
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://root:root@119.23.68.6:8761/eureka/
+      defaultZone: http://root:root@11.101.2.195:9081/eureka/
 logging:
   level:
     com.holland.gateway.filter.GatewayFilter: debug

@@ -149,20 +149,18 @@ public class CustomWebFilterChain {
 
         if ("DELETE".equals(type)) {
             final int index = api.lastIndexOf("/");
-            logMapper.insertSelective(
-                    log.setOperateApi(api.substring(0, index)).setParam(api.substring(index + 1))
-            );
+            log.setOperateApi(api.substring(0, index))
+                    .setParam(api.substring(index + 1));
+        } else {
+            final String queryParam = JSONObject.toJSONString(request.getQueryParams().toSingleValueMap());
+            final String bodyParam = DataBufferUtils.join(request.getBody())
+                    .map(dataBuffer -> dataBuffer.toString(StandardCharsets.UTF_8))
+                    .block();
+            final String param = queryParam + (bodyParam == null ? "" : bodyParam);
+            log.setParam(truncByte(param, 1024));
         }
 
-        final String queryParam = JSONObject.toJSONString(request.getQueryParams().toSingleValueMap());
-        final String bodyParam = DataBufferUtils.join(request.getBody())
-                .map(dataBuffer -> dataBuffer.toString(StandardCharsets.UTF_8))
-                .block();
-        final String param = queryParam + (bodyParam == null ? "" : bodyParam);
-
-        logMapper.insertSelective(
-                log.setParam(truncByte(param, 1024))
-        );
+        logMapper.insertSelective(log);
     }
 
     private void logLogin(ServerHttpRequest request, HttpStatus statusCode, String respBody) {

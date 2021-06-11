@@ -23,6 +23,7 @@
     <select id="all" resultMap="BaseResultMap">
         select <include refid="Base_Column_List" />
         from route_whitelist
+        order by id
     </select>
 
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">

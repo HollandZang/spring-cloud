@@ -7,7 +7,6 @@ import com.holland.gateway.mapper.RouteWhitelistMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -32,7 +31,6 @@ public class RouteWhitelistController {
         return ResponseEntity.ok().build();
     }
 
-    @Validated
     @GetMapping("/list")
     public ResponseEntity<?> list(Integer page, Integer limit) {
         final int offset = page == null ? 0 : page <= 0 ? 0 : (page - 1) * limit;
