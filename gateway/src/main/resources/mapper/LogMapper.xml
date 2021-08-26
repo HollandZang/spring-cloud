@@ -100,7 +100,7 @@
         where   id = #{id,jdbcType=INTEGER}
     </update>
 
-    <select id="count">
+    <select id="count" resultType="java.lang.Long">
         select count(1) from log
     </select>
     <select id="list" resultMap="BaseResultMap">

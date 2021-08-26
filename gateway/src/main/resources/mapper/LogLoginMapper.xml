@@ -17,7 +17,7 @@
 
     <sql id="Base_Column_List">
         id,operate_user,operate_time,
-        operate_type,from,ip,
+        operate_type,"from",ip,
         result,response
     </sql>
 
@@ -25,17 +25,17 @@
         select
         <include refid="Base_Column_List" />
         from log_login
-        where  id = #{id,jdbcType=INTEGER} 
+        where  id = #{id,jdbcType=INTEGER}
     </select>
 
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete from log_login
-        where  id = #{id,jdbcType=INTEGER} 
+        where  id = #{id,jdbcType=INTEGER}
     </delete>
     <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.holland.gateway.domain.LogLogin" useGeneratedKeys="true">
         insert into log_login
         ( id,operate_user,operate_time
-        ,operate_type,from,ip
+        ,operate_type,"from",ip
         ,result,response)
         values (#{id,jdbcType=INTEGER},#{operateUser,jdbcType=VARCHAR},#{operateTime,jdbcType=TIMESTAMP}
         ,#{operateType,jdbcType=CHAR},#{from,jdbcType=VARCHAR},#{ip,jdbcType=VARCHAR}
@@ -48,8 +48,7 @@
                 <if test="operateUser != null">operate_user,</if>
                 <if test="operateTime != null">operate_time,</if>
                 <if test="operateType != null">operate_type,</if>
-                <if test="operateApi != null">operate_api,</if>
-                <if test="from != null">from,</if>
+                <if test="from != null">"from",</if>
                 <if test="ip != null">ip,</if>
                 <if test="result != null">result,</if>
                 <if test="response != null">response,</if>
@@ -59,7 +58,7 @@
                 <if test="operateUser != null">operate_user = #{operateUser,jdbcType=VARCHAR},</if>
                 <if test="operateTime != null">operate_time = #{operateTime,jdbcType=TIMESTAMP},</if>
                 <if test="operateType != null">operate_type = #{operateType,jdbcType=CHAR},</if>
-                <if test="from != null">from = #{from,jdbcType=VARCHAR},</if>
+                <if test="from != null">"from" = #{from,jdbcType=VARCHAR},</if>
                 <if test="ip != null">ip = #{ip,jdbcType=VARCHAR},</if>
                 <if test="result != null">result = #{result,jdbcType=INTEGER},</if>
                 <if test="response != null">response = #{response,jdbcType=VARCHAR},</if>
@@ -78,7 +77,7 @@
                     operate_type = #{operateType,jdbcType=CHAR},
                 </if>
                 <if test="from != null">
-                    from = #{from,jdbcType=VARCHAR},
+                    "from" = #{from,jdbcType=VARCHAR},
                 </if>
                 <if test="ip != null">
                     ip = #{ip,jdbcType=VARCHAR},
@@ -90,22 +89,22 @@
                     response = #{response,jdbcType=VARCHAR},
                 </if>
         </set>
-        where   id = #{id,jdbcType=INTEGER} 
+        where   id = #{id,jdbcType=INTEGER}
     </update>
     <update id="updateByPrimaryKey" parameterType="com.holland.gateway.domain.LogLogin">
         update log_login
-        set 
+        set
             operate_user =  #{operateUser,jdbcType=VARCHAR},
             operate_time =  #{operateTime,jdbcType=TIMESTAMP},
             operate_type =  #{operateType,jdbcType=CHAR},
-            from =  #{from,jdbcType=VARCHAR},
+            "from" =  #{from,jdbcType=VARCHAR},
             ip =  #{ip,jdbcType=VARCHAR},
             result =  #{result,jdbcType=INTEGER},
             response =  #{response,jdbcType=VARCHAR}
-        where   id = #{id,jdbcType=INTEGER} 
+        where   id = #{id,jdbcType=INTEGER}
     </update>
 
-    <select id="count">
+    <select id="count" resultType="java.lang.Long">
         select count(1) from log_login
     </select>
     <select id="list" resultMap="BaseResultMap">

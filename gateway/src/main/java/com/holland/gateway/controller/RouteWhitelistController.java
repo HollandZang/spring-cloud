@@ -1,6 +1,5 @@
 package com.holland.gateway.controller;
 
-import com.holland.gateway.common.CustomCache;
 import com.holland.gateway.common.ValidateUtil;
 import com.holland.gateway.domain.RouteWhitelist;
 import com.holland.gateway.mapper.RouteWhitelistMapper;
@@ -23,25 +22,17 @@ public class RouteWhitelistController {
     @Resource
     private RouteWhitelistMapper routeWhitelistMapper;
 
-    @Resource
-    private CustomCache customCache;
-
-    @GetMapping("/refresh")
-    public ResponseEntity<?> refresh() {
-        customCache.init();
-        return ResponseEntity.ok().build();
-    }
-
     @Validated
     @GetMapping("/list")
     public ResponseEntity<?> list(Integer page, Integer limit) {
         final int offset = page == null ? 0 : page <= 0 ? 0 : (page - 1) * limit;
         limit = limit == null ? 10 : limit <= 0 ? 10 : limit;
-        final List<RouteWhitelist> collect = customCache.routeWhitelist.stream()
+        List<RouteWhitelist> all = routeWhitelistMapper.all();
+        final List<RouteWhitelist> collect = all.stream()
                 .skip(offset)
                 .limit(limit)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(Map.of("data", collect, "count", customCache.routeWhitelist.size()));
+        return ResponseEntity.ok(Map.of("data", collect, "count", all.size()));
     }
 
     @PostMapping
@@ -54,7 +45,6 @@ public class RouteWhitelistController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("url已存在");
         }
         final int row = routeWhitelistMapper.insertSelective(routeWhitelist);
-        customCache.init();
         return ResponseEntity.ok(row);
     }
 
@@ -66,7 +56,6 @@ public class RouteWhitelistController {
         if (row == 0) {
             return ResponseEntity.status(HttpStatus.GONE).body("资源不存在");
         }
-        customCache.init();
         return ResponseEntity.ok(row);
     }
 
@@ -76,7 +65,6 @@ public class RouteWhitelistController {
         if (row == 0) {
             return ResponseEntity.status(HttpStatus.GONE).body("资源不存在");
         }
-        customCache.init();
         return ResponseEntity.ok(row);
     }
 }

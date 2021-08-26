@@ -3,6 +3,11 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.holland.gateway.mapper.RouteWhitelistMapper">
+    <cache
+            eviction="FIFO"
+            flushInterval="60000"
+            size="1024"
+            readOnly="true"/>
 
     <resultMap id="BaseResultMap" type="com.holland.gateway.domain.RouteWhitelist">
             <id property="id" column="id" jdbcType="INTEGER"/>
@@ -27,7 +32,7 @@
 
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete from route_whitelist
-        where  id = #{id,jdbcType=INTEGER} 
+        where  id = #{id,jdbcType=INTEGER}
     </delete>
     <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.holland.gateway.domain.RouteWhitelist" useGeneratedKeys="true">
         insert into route_whitelist
@@ -52,6 +57,6 @@
                     enabled = #{enabled,jdbcType=BOOLEAN},
                 </if>
         </set>
-        where   id = #{id,jdbcType=INTEGER} 
+        where   id = #{id,jdbcType=INTEGER}
     </update>
 </mapper>

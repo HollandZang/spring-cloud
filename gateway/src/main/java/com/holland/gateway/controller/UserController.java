@@ -42,10 +42,8 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody JSONObject o) {
         final String loginName = o.getString("loginName");
         final String password = o.getString("password");
-        final String from = o.getString("from");    /*指明通过什么软件、项目登录*/
         ValidateUtil.notEmpty(loginName, "用户名");
         ValidateUtil.notEmpty(password, "密码");
-        ValidateUtil.notEmpty(from, "from");
 
         final Optional<User> optional = userMapper.selectByLoginName(loginName);
         if (optional.isEmpty()) {
@@ -53,7 +51,6 @@ public class UserController {
         }
         final User dbUser = optional.get();
         if (encoder.matches(password, dbUser.getPassword())) {
-
             dbUser.setPassword(null);
             redisController.setToken(loginName, dbUser);
             return ResponseEntity.ok(dbUser);
@@ -62,11 +59,16 @@ public class UserController {
         }
     }
 
+    /**
+     * https://www.w3.org/TR/clear-site-data/
+     */
     @PostMapping("/logout")
     public ResponseEntity<?> logout(ServerHttpRequest request) {
         final String token = RequestUtil.getToken(request);
         redisController.delToken(token);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+                .header("Clear-Site-Data","\"cache\", \"cookies\", \"storage\", \"executionContexts\"")
+                .build();
     }
 
     @PostMapping

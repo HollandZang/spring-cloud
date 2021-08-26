@@ -1,7 +1,6 @@
 package com.holland.gateway.filter;
 
 import com.alibaba.fastjson.JSONObject;
-import com.holland.gateway.common.CustomCache;
 import com.holland.gateway.common.RedisController;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.domain.Log;
@@ -9,6 +8,7 @@ import com.holland.gateway.domain.LogLogin;
 import com.holland.gateway.domain.RouteWhitelist;
 import com.holland.gateway.mapper.LogLoginMapper;
 import com.holland.gateway.mapper.LogMapper;
+import com.holland.gateway.mapper.RouteWhitelistMapper;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ public class CustomWebFilterChain {
     private RedisController redisController;
 
     @Resource
-    private CustomCache customCache;
+    private RouteWhitelistMapper routeWhitelistMapper;
 
     @Resource
     private LogMapper logMapper;
@@ -65,7 +65,7 @@ public class CustomWebFilterChain {
             final ServerHttpRequest request = exchange.getRequest();
 
             /* 精确的路径匹配模式 */
-            final boolean notNeedToken = customCache.routeWhitelist.stream()
+            final boolean notNeedToken = routeWhitelistMapper.all().stream()
                     .filter(RouteWhitelist::getEnabled)
                     .anyMatch(it -> it.getUrl().equals(request.getURI().getRawPath()));
             final ServerHttpResponse originalResponse = exchange.getResponse();
@@ -160,25 +160,33 @@ public class CustomWebFilterChain {
                 .block();
         final String param = queryParam + (bodyParam == null ? "" : bodyParam);
 
-        logMapper.insertSelective(
-                log.setParam(truncByte(param, 1024))
-        );
+        try {
+            logMapper.insertSelective(
+                    log.setParam(truncByte(param, 1024)));
+        } catch (Exception e) {
+            logger.error("log->'log'", e);
+        }
     }
 
     private void logLogin(ServerHttpRequest request, HttpStatus statusCode, String respBody) {
+        /*指明通过什么软件、项目登录*/
+        final String from = request.getHeaders().getFirst("User-Agent");
         final String loginName = request.getQueryParams().getFirst("loginName");
-        final String from = request.getQueryParams().getFirst("from");
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
         final int result = statusCode.value();
 
-        logLoginMapper.insertSelective(new LogLogin()
-                .setOperateUser(loginName)
-                .setOperateTime(new Date())
-                .setOperateType("1")
-                .setFrom(from)
-                .setIp(ip)
-                .setResult(result)
-                .setResponse(respBody));
+        try {
+            logLoginMapper.insertSelective(new LogLogin()
+                    .setOperateUser(loginName)
+                    .setOperateTime(new Date())
+                    .setOperateType("1")
+                    .setFrom(from)
+                    .setIp(ip)
+                    .setResult(result)
+                    .setResponse(respBody));
+        } catch (Exception e) {
+            logger.error("log->'logLogin'", e);
+        }
     }
 
     private void logLogout(ServerHttpRequest request, HttpStatus statusCode, String respBody) {
@@ -186,13 +194,17 @@ public class CustomWebFilterChain {
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
         final int result = statusCode.value();
 
-        logLoginMapper.insertSelective(new LogLogin()
-                .setOperateUser(loginName)
-                .setOperateTime(new Date())
-                .setOperateType("0")
-                .setIp(ip)
-                .setResult(result)
-                .setResponse(respBody));
+        try {
+            logLoginMapper.insertSelective(new LogLogin()
+                    .setOperateUser(loginName)
+                    .setOperateTime(new Date())
+                    .setOperateType("0")
+                    .setIp(ip)
+                    .setResult(result)
+                    .setResponse(respBody));
+        } catch (Exception e) {
+            logger.error("log->'logLogout'", e);
+        }
     }
 
     private String truncByte(String field, int length) {

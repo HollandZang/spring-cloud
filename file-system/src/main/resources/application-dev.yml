@@ -1,7 +1,7 @@
 spring:
   data:
     mongodb:
-      uri: mongodb://119.23.68.6:27017/admin
+      uri: mongodb://localhost:27017/admin
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://119.23.68.6:5432/config
@@ -10,4 +10,4 @@ spring:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://root:root@119.23.68.6:8761/eureka/
+      defaultZone: http://root:root@localhost:8761/eureka/
