@@ -10,3 +10,4 @@ spring:
     time-zone: GMT+8
   profiles:
     active: dev
+    include: admin

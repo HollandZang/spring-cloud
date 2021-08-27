@@ -10,6 +10,7 @@ spring:
     name: gateway
   profiles:
     active: dev
+    include: admin
   cloud:
     gateway:
       discovery:
