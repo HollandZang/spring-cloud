@@ -4,10 +4,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
 	<modules>
+		<module>admin</module>
 		<module>eureka</module>
-		<module>gateway</module>
 		<module>file-system</module>
-    </modules>
+		<module>gateway</module>
+		<module>sleuth</module>
+	</modules>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
