@@ -1,10 +1,8 @@
 server:
   port: 8763
-  servlet:
-    context-path: /filesystem
 spring:
   application:
-    name: file-system
+    name: filesystem
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8

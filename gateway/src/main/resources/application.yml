@@ -16,12 +16,4 @@ spring:
       discovery:
         locator:
           enabled: true
-      routes:
-        - id: stardon-main
-          uri: http://localhost:8701
-          predicates:
-            - Path=/stardon-main/**
-        - id: file-system
-          uri: http://localhost:8763
-          predicates:
-            - Path=/filesystem/**
+          lower-case-service-id: true

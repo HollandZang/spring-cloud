@@ -1,8 +1,0 @@
-server:
-  port: 8765
-spring:
-  application:
-    name: sleuth
-  profiles:
-    active: dev
-    include: admin

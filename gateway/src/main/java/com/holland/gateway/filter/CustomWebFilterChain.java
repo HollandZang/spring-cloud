@@ -5,7 +5,6 @@ import com.holland.gateway.common.RedisController;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.domain.Log;
 import com.holland.gateway.domain.LogLogin;
-import com.holland.gateway.domain.RouteWhitelist;
 import com.holland.gateway.mapper.LogLoginMapper;
 import com.holland.gateway.mapper.LogMapper;
 import com.holland.gateway.mapper.RouteWhitelistMapper;
@@ -24,6 +23,7 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -65,11 +65,11 @@ public class CustomWebFilterChain {
             final ServerHttpRequest request = exchange.getRequest();
 
             /* 精确的路径匹配模式 */
-            final boolean notNeedToken = routeWhitelistMapper.all().stream()
-                    .filter(RouteWhitelist::getEnabled)
-                    .anyMatch(it -> it.getUrl().equals(request.getURI().getRawPath()));
-            final ServerHttpResponse originalResponse = exchange.getResponse();
-
+//            final boolean notNeedToken = routeWhitelistMapper.all().stream()
+//                    .filter(RouteWhitelist::getEnabled)
+//                    .anyMatch(it -> it.getUrl().equals(request.getURI().getRawPath()));
+//            final ServerHttpResponse originalResponse = exchange.getResponse();
+//
 //            //token验证
 //            if (!notNeedToken) {
 //                final String token = RequestUtil.getToken(request);
@@ -92,6 +92,11 @@ public class CustomWebFilterChain {
     private WebFilter logFilter() {
         return (exchange, chain) -> {
             final ServerHttpRequest request = exchange.getRequest();
+            final String api = request.getURI().getRawPath();
+            if (api.startsWith("/actuator")) {
+                // 过滤admin模块健康日志
+                return chain.filter(exchange);
+            }
             logger.debug("{} {}", request.getMethod(), request.getURI());
 
             final ServerHttpResponse originalResponse = exchange.getResponse();
@@ -118,7 +123,7 @@ public class CustomWebFilterChain {
                                                     logLogout(request, originalResponse.getStatusCode(), respBody);
                                                     break;
                                                 default:
-                                                    log(request, originalResponse.getStatusCode(), respBody);
+                                                    log(request, originalResponse.getStatusCode(), respBody, exchange);
                                             }
                                         })
                         );
@@ -131,7 +136,7 @@ public class CustomWebFilterChain {
         };
     }
 
-    private void log(ServerHttpRequest request, HttpStatus statusCode, String respBody) {
+    private void log(ServerHttpRequest request, HttpStatus statusCode, String respBody, ServerWebExchange exchange) {
         final String loginName = RequestUtil.getLoginName(request);
         final String type = request.getMethodValue();
         final String api = request.getURI().getRawPath();
@@ -154,18 +159,18 @@ public class CustomWebFilterChain {
             );
         }
 
-        final String queryParam = JSONObject.toJSONString(request.getQueryParams().toSingleValueMap());
-        final String bodyParam = DataBufferUtils.join(request.getBody())
-                .map(dataBuffer -> dataBuffer.toString(StandardCharsets.UTF_8))
-                .block();
-        final String param = queryParam + (bodyParam == null ? "" : bodyParam);
+        exchange.getSession().subscribe(session -> {
+            final String bodyParam = CachedRequestBodyObject.getOrBlock(session, request);
+            final String queryParam = JSONObject.toJSONString(request.getQueryParams().toSingleValueMap());
+            final String param = queryParam + (bodyParam == null ? "" : bodyParam);
 
-        try {
-            logMapper.insertSelective(
-                    log.setParam(truncByte(param, 1024)));
-        } catch (Exception e) {
-            logger.error("log->'log'", e);
-        }
+            try {
+                logMapper.insertSelective(
+                        log.setParam(truncByte(param, 1024)));
+            } catch (Exception e) {
+                logger.error("log->'log'", e);
+            }
+        });
     }
 
     private void logLogin(ServerHttpRequest request, HttpStatus statusCode, String respBody) {
