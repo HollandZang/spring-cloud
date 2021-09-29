@@ -1,5 +1,6 @@
 package com.holland.gateway.filter;
 
+import com.holland.gateway.swagger.SwaggerUtils;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.filter.factory.rewrite.ModifyRequestBodyGatewayFilterFactory;
@@ -14,14 +15,22 @@ import javax.annotation.Resource;
  * 官方推荐用ModifyRequestBodyGatewayFilterFactory来获取body
  * https://cloud.spring.io/spring-cloud-gateway/multi/multi__gatewayfilter_factories.html
  */
-@Component
+//@Component
 public class CacheRequestBodyFilter implements GlobalFilter, Ordered {
 
     @Resource
     private ModifyRequestBodyGatewayFilterFactory modifyRequestBodyFilter;
 
+    @Resource
+    private SwaggerUtils swaggerUtils;
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        // 过滤swagger日志
+        if (swaggerUtils.enabledSwagger() && swaggerUtils.isSwaggerRequest(exchange.getRequest().getURI().getRawPath())) {
+            return chain.filter(exchange);
+        }
+
         return modifyRequestBodyFilter
                 .apply(
                         new ModifyRequestBodyGatewayFilterFactory.Config()

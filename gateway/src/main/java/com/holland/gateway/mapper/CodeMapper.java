@@ -12,15 +12,9 @@ import java.util.Map;
 @Mapper
 public interface CodeMapper {
 
-    int deleteByPrimaryKey(Long id);
+    int delete(String type, String code);
 
     int insert(Code record);
-
-    int insertSelective(Code record);
-
-    Code selectByPrimaryKey(Long id);
-
-    int updateByPrimaryKeySelective(Code record);
 
     int updateByPrimaryKey(Code record);
 

@@ -2,11 +2,6 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/admin
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/yjg
-    username: postgres
-    password: postgres
 eureka:
   client:
     serviceUrl:

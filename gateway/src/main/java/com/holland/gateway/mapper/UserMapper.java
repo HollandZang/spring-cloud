@@ -1,5 +1,6 @@
 package com.holland.gateway.mapper;
 
+import com.holland.gateway.sqlHelper.PageHelper;
 import com.holland.gateway.domain.User;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -16,7 +17,7 @@ public interface UserMapper {
 
     Optional<User> selectByLoginName(String loginName);
 
-    List<User> list(int offset, int limit);
+    List<User> list(PageHelper pageHelper);
 
     int updateByUserSelective(User record);
 

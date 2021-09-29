@@ -1,38 +1,28 @@
-package com.holland.gateway.conf;
+package com.holland.gateway.swagger;
 
 import org.apache.commons.lang.StringUtils;
-import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
 
-
-@Component
-public class SwaggerHeaderFilter extends AbstractGatewayFilterFactory implements Ordered {
+public class SwaggerRouteFilter {
     private static final String HEADER_NAME = "X-Forwarded-Prefix";
 
     private static final String URI = "/v2/api-docs";
 
-    @Override
-    public GatewayFilter apply(Object config) {
-        // TODO: 2021/9/18 没进入方法
+    public static WebFilter getWebFilter() {
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
             String path = request.getURI().getPath();
             if (!StringUtils.endsWithIgnoreCase(path, URI)) {
                 return chain.filter(exchange);
             }
+
+            //todo 过滤静态资源等
             String basePath = path.substring(0, path.lastIndexOf(URI));
             ServerHttpRequest newRequest = request.mutate().header(HEADER_NAME, basePath).build();
             ServerWebExchange newExchange = exchange.mutate().request(newRequest).build();
             return chain.filter(newExchange);
         };
-    }
-
-    @Override
-    public int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE;
     }
 }

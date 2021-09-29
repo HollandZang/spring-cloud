@@ -9,64 +9,64 @@
             size="1024"
             readOnly="true"/>
     <resultMap id="BaseResultMap" type="com.holland.gateway.domain.User">
-            <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="loginName" column="login_name" jdbcType="VARCHAR"/>
-            <result property="password" column="password" jdbcType="VARCHAR"/>
-            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="loginName" column="login_name" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,login_name,password,
-        create_time,update_time
+        `id`,`login_name`,`password`,
+        `create_time`,`update_time`
     </sql>
 
     <select id="selectByLoginName" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_List" />
-        from "user"
-        where  login_name = #{loginName}
+        <include refid="Base_Column_List"/>
+        from `user`
+        where `login_name` = #{loginName}
     </select>
     <select id="count" resultType="java.lang.Long">
-        select count(1) from "user"
+        select count(1)
+        from `user`
     </select>
     <select id="list" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_List" />
-        from "user"
-        limit #{limit} offset #{offset}
+            `id`,`login_name`,`create_time`,`update_time`
+        from `user`
+        limit #{offset},#{limit}
     </select>
 
-    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.holland.gateway.domain.User" useGeneratedKeys="true">
-        insert into "user"
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.holland.gateway.domain.User"
+            useGeneratedKeys="true">
+        insert into `user`
         <trim prefix="(" suffix=")" suffixOverrides=",">
-                <if test="id != null">id,</if>
-                <if test="loginName != null">login_name,</if>
-                <if test="password != null">password,</if>
-                <if test="createTime != null">create_time,</if>
-                <if test="updateTime != null">update_time,</if>
+            <if test="loginName != null">`login_name`,</if>
+            <if test="password != null">`password`,</if>
+            <if test="createTime != null">`create_time`,</if>
+            <if test="updateTime != null">`update_time`,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-                <if test="id != null">id = #{id,jdbcType=INTEGER},</if>
-                <if test="loginName != null">login_name = #{loginName,jdbcType=VARCHAR},</if>
-                <if test="password != null">password = #{password,jdbcType=VARCHAR},</if>
-                <if test="createTime != null">create_time = #{createTime,jdbcType=TIMESTAMP},</if>
-                <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="loginName != null">#{loginName,jdbcType=VARCHAR},</if>
+            <if test="password != null">#{password,jdbcType=VARCHAR},</if>
+            <if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
+            <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
         </trim>
     </insert>
     <update id="updateByUserSelective" parameterType="com.holland.gateway.domain.User">
-        update "user"
+        update `user`
         <set>
-                <if test="password != null">
-                    password = #{password,jdbcType=VARCHAR},
-                </if>
-                <if test="createTime != null">
-                    create_time = #{createTime,jdbcType=TIMESTAMP},
-                </if>
-                <if test="updateTime != null">
-                    update_time = #{updateTime,jdbcType=TIMESTAMP},
-                </if>
+            <if test="password != null">
+                `password` = #{password,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                `create_time` = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                `update_time` = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
         </set>
-        where   login_name = #{loginName}
+        where `login_name` = #{loginName}
     </update>
 </mapper>

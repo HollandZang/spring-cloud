@@ -11,6 +11,9 @@ spring:
     include: admin
 eureka:
   instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    hostname: ${spring.cloud.client.ip-address}
     leaseRenewalIntervalInSeconds: 10
     health-check-url-path: /actuator/health
     metadata-map:

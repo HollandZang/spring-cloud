@@ -1,11 +1,14 @@
 package com.holland.gateway.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.holland.gateway.sqlHelper.PageHelper;
 import com.holland.gateway.common.RedisController;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.common.ValidateUtil;
 import com.holland.gateway.domain.User;
 import com.holland.gateway.mapper.UserMapper;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -19,6 +22,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 
+@Api(tags = "用户模块")
 @Controller
 @RequestMapping("/user")
 public class UserController {
@@ -31,13 +35,14 @@ public class UserController {
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(8);
 
+    @ApiOperation("获取用户列表")
     @GetMapping("/list")
     public ResponseEntity<?> list(Integer page, Integer limit) {
-        final int offset = page == null ? 0 : page <= 0 ? 0 : (page - 1) * limit;
-        limit = limit == null ? 10 : limit <= 0 ? 10 : limit;
-        return ResponseEntity.ok(Map.of("data", userMapper.list(offset, limit), "count", userMapper.count()));
+        final PageHelper pageHelper = new PageHelper(page, limit);
+        return ResponseEntity.ok(Map.of("data", userMapper.list(pageHelper), "count", userMapper.count()));
     }
 
+    @ApiOperation("登录")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody JSONObject o) {
         final String loginName = o.getString("loginName");
@@ -52,8 +57,10 @@ public class UserController {
         final User dbUser = optional.get();
         if (encoder.matches(password, dbUser.getPassword())) {
             dbUser.setPassword(null);
-            redisController.setToken(loginName, dbUser);
-            return ResponseEntity.ok(dbUser);
+            final String token = redisController.setToken(loginName, dbUser);
+            final JSONObject json = (JSONObject) JSONObject.toJSON(dbUser);
+            json.put("token", token);
+            return ResponseEntity.ok(json);
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("账号或密码错误");
         }
@@ -62,21 +69,28 @@ public class UserController {
     /**
      * https://www.w3.org/TR/clear-site-data/
      */
+    @ApiOperation("注销")
     @PostMapping("/logout")
     public ResponseEntity<?> logout(ServerHttpRequest request) {
         final String token = RequestUtil.getToken(request);
-        redisController.delToken(token);
+        final Boolean aBoolean = redisController.delToken(token);
         return ResponseEntity.ok()
-                .header("Clear-Site-Data","\"cache\", \"cookies\", \"storage\", \"executionContexts\"")
-                .build();
+                .header("Clear-Site-Data", "\"cache\", \"cookies\", \"storage\", \"executionContexts\"")
+                .body(aBoolean);
     }
 
-    @PostMapping
+    @ApiOperation("新增用户")
+    @PostMapping("/create")
     public ResponseEntity<?> add(@RequestBody User user) {
         ValidateUtil.notEmpty(user.getLoginName(), "用户名");
         ValidateUtil.maxLength(user.getLoginName(), 16, "用户名");
         ValidateUtil.notEmpty(user.getPassword(), "密码");
         ValidateUtil.maxLength(user.getPassword(), 16, "密码");
+
+        final Optional<User> optional = userMapper.selectByLoginName(user.getLoginName());
+        if (optional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("账号已存在");
+        }
 
         final String encode = encoder.encode(user.getPassword());
         final Date now = new Date();
@@ -87,6 +101,7 @@ public class UserController {
         return ResponseEntity.ok(row);
     }
 
+    @ApiOperation("更新用户信息")
     @PutMapping
     public ResponseEntity<?> update(ServerHttpRequest request, @RequestBody User user) {
         user.setLoginName(RequestUtil.getLoginName(request));

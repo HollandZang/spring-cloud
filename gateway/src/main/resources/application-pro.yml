@@ -1,4 +1,25 @@
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://root:root@localhost:8761/eureka/
+logging:
+  level:
+    com.holland.gateway.filter.GatewayFilter: debug
+    com.holland.gateway.filter.CustomWebFilterChain: debug
+    com.holland.gateway.mapper: debug
+    com.holland.gateway.mapper.LogMapper.insertSelective: info
+spring:
+  redis:
+    host: 119.23.68.6
+    port: 6379
+    password: 8DFn36P@$*,e!6
+    token-timeout: 60
+    token-key-prefix: "holland:"
+  cache:
+    redis:
+      use-key-prefix: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/spring-cloud_gateway?useUnicode=true&characterEncoding=utf8&useSSL=false&autoReconnect=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: root

@@ -1,5 +1,6 @@
 package com.holland.gateway.mapper;
 
+import com.holland.gateway.sqlHelper.PageHelper;
 import com.holland.gateway.domain.CodeType;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -15,15 +16,9 @@ public interface CodeTypeMapper {
 
     int insert(CodeType record);
 
-    int insertSelective(CodeType record);
-
-    CodeType selectByPrimaryKey(Long id);
-
-    int updateByPrimaryKeySelective(CodeType record);
-
     int updateByPrimaryKey(CodeType record);
 
-    List<CodeType> list(int offset, Integer limit);
+    List<CodeType> list(PageHelper pageHelper);
 
     Long count();
 }

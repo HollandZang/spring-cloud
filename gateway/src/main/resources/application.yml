@@ -5,6 +5,11 @@ mybatis:
   configuration:
     call-setters-on-nulls: true
     map-underscore-to-camel-case: true
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    hostname: ${spring.cloud.client.ip-address}
 spring:
   application:
     name: gateway

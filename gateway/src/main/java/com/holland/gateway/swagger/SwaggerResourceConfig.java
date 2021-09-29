@@ -1,34 +1,54 @@
-package com.holland.gateway.conf;
+package com.holland.gateway.swagger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.cloud.gateway.config.GatewayProperties;
-import org.springframework.cloud.gateway.route.RouteLocator;
-import org.springframework.cloud.gateway.support.NameUtils;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import springfox.documentation.swagger.web.SwaggerResource;
 import springfox.documentation.swagger.web.SwaggerResourcesProvider;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 @Primary
 public class SwaggerResourceConfig implements SwaggerResourcesProvider {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private final RouteLocator routeLocator;
-    private final GatewayProperties gatewayProperties;
-
-    public SwaggerResourceConfig(RouteLocator routeLocator, GatewayProperties gatewayProperties) {
-        this.routeLocator = routeLocator;
-        this.gatewayProperties = gatewayProperties;
-    }
+    @Resource
+    private DiscoveryClient discoveryClient;
 
     @Override
     public List<SwaggerResource> get() {
-        List<SwaggerResource> resources = new ArrayList<>();
+        /**
+         * 先把自身加入swagger
+         * 在通过发现服务找到其他需要添加到swagger的模块，同时排除掉没有swagger模块防止报错
+         * swagger调用地址应该是`/v2/api-docs`，但是knife4j访问其他模块时请求地址会有异常，所以用`/swagger/v2/api-docs`调原接口并修改参数里面的地址
+         */
+        List<SwaggerResource> resources = new ArrayList<>() {{
+            add(swaggerResource("gateway", "/v2/api-docs"));
+        }};
+
+        discoveryClient.getServices()
+                .stream()
+                .filter(s -> !"eureka".equals(s) && !"admin".equals(s) && !"gateway".equals(s))
+                .forEach(appName -> resources.add(swaggerResource(appName, appName + "/swagger/v2/api-docs")));
+
+        return resources;
+    }
+
+    /**
+     * 此写法只能获取配置文件里面的路由规则
+     */
+   /*@Resource
+    private RouteLocator routeLocator;
+    @Resource
+    private GatewayProperties gatewayProperties;
+
+    @Override
+    public List<SwaggerResource> get() {
+        List<SwaggerResource> resources = new ArrayList<>() {{
+            add(swaggerResource("gateway", "/v2/api-docs"));
+        }};
+
         List<String> routes = new ArrayList<>();
         routeLocator.getRoutes().subscribe(route -> routes.add(route.getId()));
         gatewayProperties.getRoutes().stream().filter(routeDefinition -> routes.contains(routeDefinition.getId())).forEach(route -> {
@@ -38,12 +58,9 @@ public class SwaggerResourceConfig implements SwaggerResourcesProvider {
                             predicateDefinition.getArgs().get(NameUtils.GENERATED_NAME_PREFIX + "0")
                                     .replace("**", "v2/api-docs"))));
         });
-
         return resources;
-    }
-
+    }*/
     private SwaggerResource swaggerResource(String name, String location) {
-        logger.info("name:{},location:{}", name, location);
         SwaggerResource swaggerResource = new SwaggerResource();
         swaggerResource.setName(name);
         swaggerResource.setLocation(location);

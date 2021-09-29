@@ -1,4 +1,4 @@
-package com.holland.gateway.controller;
+package com.holland.gateway.swagger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,7 +27,6 @@ public class SwaggerHandler {
         this.swaggerResources = swaggerResources;
     }
 
-
     @GetMapping("/swagger-resources/configuration/security")
     public Mono<ResponseEntity<SecurityConfiguration>> securityConfiguration() {
         return Mono.just(new ResponseEntity<>(
@@ -41,7 +40,7 @@ public class SwaggerHandler {
     }
 
     @GetMapping("/swagger-resources")
-    public Mono<ResponseEntity> swaggerResources() {
+    public Mono<ResponseEntity<?>> swaggerResources() {
         return Mono.just((new ResponseEntity<>(swaggerResources.get(), HttpStatus.OK)));
     }
 }

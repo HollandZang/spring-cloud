@@ -1,5 +1,10 @@
 server:
   port: 8763
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    hostname: ${spring.cloud.client.ip-address}
 spring:
   application:
     name: filesystem

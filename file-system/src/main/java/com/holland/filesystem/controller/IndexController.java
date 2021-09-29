@@ -17,9 +17,4 @@ public class IndexController {
         return Mono.defer(() -> Mono.just("file_system::OK\n" + new Date()))
                 .map(it -> ResponseEntity.ok().body(it));
     }
-
-    @GetMapping("t")
-    public ResponseEntity<?> t() {
-        return ResponseEntity.ok().body("file_system::OK\n" + new Date());
-    }
 }

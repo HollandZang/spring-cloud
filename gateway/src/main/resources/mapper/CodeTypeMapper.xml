@@ -16,66 +16,36 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id
-        ,des
+        `id`
+        ,`des`
     </sql>
 
-    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
-        select
-        <include refid="Base_Column_List"/>
-        from code_type
-        where
-    </select>
     <select id="count" resultType="java.lang.Long">
         select count(1)
-        from code_type
+        from `code_type`
     </select>
     <select id="list" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
-        from code_type
-        limit #{limit} offset #{offset}
+        from `code_type`
+        limit #{offset},#{limit}
     </select>
 
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete
-        from code_type
-        where
+        from `code_type`
+        where `id`= #{id}
     </delete>
     <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.holland.gateway.domain.CodeType"
             useGeneratedKeys="true">
-        insert into code_type
-            (id, des)
+        insert into `code_type`
+            (`id`, `des`)
         values (#{id,jdbcType=VARCHAR}, #{des,jdbcType=VARCHAR}) )
     </insert>
-    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.holland.gateway.domain.CodeType"
-            useGeneratedKeys="true">
-        insert into code_type
-        <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="id != null">id,</if>
-            <if test="des != null">des,</if>
-        </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="id != null">id = #{id,jdbcType=VARCHAR},</if>
-            <if test="des != null">des = #{des,jdbcType=VARCHAR},</if>
-        </trim>
-    </insert>
-    <update id="updateByPrimaryKeySelective" parameterType="com.holland.gateway.domain.CodeType">
-        update code_type
-        <set>
-            <if test="id != null">
-                id = #{id,jdbcType=VARCHAR},
-            </if>
-            <if test="des != null">
-                des = #{des,jdbcType=VARCHAR},
-            </if>
-        </set>
-        where
-    </update>
     <update id="updateByPrimaryKey" parameterType="com.holland.gateway.domain.CodeType">
-        update code_type
-        set id  = #{id,jdbcType=VARCHAR},
-            des = #{des,jdbcType=VARCHAR}
-        where
+        update
+        `code_type`
+        set `des` = #{des,jdbcType=VARCHAR}
+            where `id`  = #{id,jdbcType=VARCHAR},
     </update>
 </mapper>

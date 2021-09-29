@@ -1,6 +1,8 @@
 package com.holland.filesystem.controller;
 
 import com.mongodb.client.gridfs.model.GridFSFile;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.bson.Document;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -19,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+@Api(tags = "文件下载模块")
 @Controller
 @RequestMapping("/download")
 public class DownloadController {
@@ -26,6 +29,7 @@ public class DownloadController {
     @Resource
     private GridFsOperations operations;
 
+    @ApiOperation(value = "获取安卓h5页面当前版本信息")
     @GetMapping("/android/web/version")
     public Mono<ResponseEntity<?>> androidWebVersion() {
         GridFSFile gridFile = operations.find(Query.query(Criteria
@@ -40,6 +44,7 @@ public class DownloadController {
                 .map(it -> ResponseEntity.ok().body(it));
     }
 
+    @ApiOperation(value = "下载安卓h5页面当前版本")
     @GetMapping("/android/web")
     public Mono<ResponseEntity<InputStreamResource>> androidWeb(String objectId) throws IOException {
         final GridFSFile gridFile = operations.findOne(Query.query(Criteria.where("_id").is(objectId)));

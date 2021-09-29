@@ -1,25 +1,22 @@
 package com.holland.gateway.mapper;
 
+import com.holland.gateway.sqlHelper.PageHelper;
 import com.holland.gateway.domain.Log;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
 /**
  * @Entity com.holland.gateway.domain.Log
  */
+@Mapper
 public interface LogMapper {
-
-    int deleteByPrimaryKey(Long id);
 
     int insertSelective(Log record);
 
     Log selectByPrimaryKey(Long id);
 
-    int updateByPrimaryKeySelective(Log record);
-
-    int updateByPrimaryKey(Log record);
-
-    List<Log> list(int offset, int limit);
+    List<Log> list(PageHelper pageHelper);
 
     Long count();
 }

@@ -22,8 +22,10 @@ public class RedisController {
     @Value("${spring.redis.token-key-prefix:holland}")
     private String tokenKeyPrefix;
 
-    public void setToken(String loginName, Object user) {
-        redisTemplate.opsForValue().set(tokenKeyPrefix + loginName + DateUtil.getDateStr(), JSON.toJSONString(user), tokenTimeout, TimeUnit.MINUTES);
+    public String setToken(String loginName, Object user) {
+        final String token = loginName + '|' + DateUtil.getDateStr();
+        redisTemplate.opsForValue().set(tokenKeyPrefix + token, JSON.toJSONString(user), tokenTimeout, TimeUnit.MINUTES);
+        return token;
     }
 
     public Object getToken(String token) {
@@ -31,8 +33,8 @@ public class RedisController {
     }
 
 
-    public void delToken(String token) {
-        redisTemplate.delete(tokenKeyPrefix + token);
+    public Boolean delToken(String token) {
+        return redisTemplate.delete(tokenKeyPrefix + token);
     }
 
     @Bean
