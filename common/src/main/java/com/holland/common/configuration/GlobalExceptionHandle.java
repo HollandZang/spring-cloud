@@ -1,5 +1,6 @@
-package com.holland.gateway.common;
+package com.holland.common.configuration;
 
+import com.holland.common.utils.ValidateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -32,3 +33,4 @@ public class GlobalExceptionHandle {
                 .body("参数解析异常: " + e.getMessage());
     }
 }
+

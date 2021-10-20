@@ -2,6 +2,7 @@ package com.holland.gateway.swagger;
 
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import springfox.documentation.swagger.web.SwaggerResource;
 import springfox.documentation.swagger.web.SwaggerResourcesProvider;
@@ -10,6 +11,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
+@Profile("!pro")
 @Component
 @Primary
 public class SwaggerResourceConfig implements SwaggerResourcesProvider {

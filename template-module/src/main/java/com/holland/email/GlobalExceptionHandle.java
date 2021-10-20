@@ -1,4 +1,4 @@
-package com.holland.filesystem;
+package com.holland.email;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +17,6 @@ public class GlobalExceptionHandle {
     private final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandle.class);
 
     @ExceptionHandler(value = Exception.class)
-    @ResponseBody
     public ResponseEntity<?> handle(Exception e) {
         logger.error("服务器异常", e);
         return ResponseEntity
@@ -27,7 +26,6 @@ public class GlobalExceptionHandle {
     }
 
     @ExceptionHandler(value = BindException.class)
-    @ResponseBody
     public ResponseEntity<?> handle(BindException e) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

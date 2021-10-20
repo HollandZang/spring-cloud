@@ -1,7 +1,8 @@
-package com.holland.filesystem.swagger;
+package com.holland.email.swagger;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Controller;
@@ -18,6 +19,7 @@ import java.util.Map;
  * swagger转发控制器
  * 为knife4j配置url前缀
  */
+@Profile("!pro")
 @Controller
 public class SwaggerForwardController {
 

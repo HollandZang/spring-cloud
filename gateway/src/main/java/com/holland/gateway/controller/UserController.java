@@ -1,10 +1,10 @@
 package com.holland.gateway.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.holland.gateway.sqlHelper.PageHelper;
+import com.holland.common.utils.ValidateUtil;
+import com.holland.common.utils.sqlHelper.PageHelper;
 import com.holland.gateway.common.RedisController;
 import com.holland.gateway.common.RequestUtil;
-import com.holland.gateway.common.ValidateUtil;
 import com.holland.gateway.domain.User;
 import com.holland.gateway.mapper.UserMapper;
 import io.swagger.annotations.Api;

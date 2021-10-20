@@ -17,13 +17,10 @@ public class SwaggerUtils {
     }
 
     public boolean isSwaggerRequest(String url) {
-        return url.startsWith("/doc.html")
-                || url.startsWith("/webjars/css")
-                || url.startsWith("/webjars/js")
-                || url.startsWith("/webjars/img")
+        return url.startsWith("/webjars")
+                || "/doc.html".equals(url)
                 || url.endsWith("/v2/api-docs")
-                || url.endsWith("/swagger-resources/configuration/security")
-                || url.endsWith("/swagger-resources/configuration/ui")
-                || url.endsWith("/swagger-resources");
+                || url.startsWith("/swagger-")
+                || "/favicon.ico".equals(url);
     }
 }

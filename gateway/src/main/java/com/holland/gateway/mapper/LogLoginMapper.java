@@ -1,6 +1,6 @@
 package com.holland.gateway.mapper;
 
-import com.holland.gateway.sqlHelper.PageHelper;
+import com.holland.common.utils.sqlHelper.PageHelper;
 import com.holland.gateway.domain.LogLogin;
 import org.apache.ibatis.annotations.Mapper;
 

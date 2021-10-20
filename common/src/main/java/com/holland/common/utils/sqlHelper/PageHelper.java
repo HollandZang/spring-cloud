@@ -1,4 +1,4 @@
-package com.holland.gateway.sqlHelper;
+package com.holland.common.utils.sqlHelper;
 
 public class PageHelper {
 

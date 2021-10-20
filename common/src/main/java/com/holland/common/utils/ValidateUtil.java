@@ -1,4 +1,4 @@
-package com.holland.gateway.common;
+package com.holland.common.utils;
 
 
 import java.util.Formatter;

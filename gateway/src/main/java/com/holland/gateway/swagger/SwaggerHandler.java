@@ -1,6 +1,7 @@
 package com.holland.gateway.swagger;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,7 +11,7 @@ import springfox.documentation.swagger.web.*;
 
 import java.util.Optional;
 
-
+@Profile("!pro")
 @RestController
 public class SwaggerHandler {
 

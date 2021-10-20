@@ -60,7 +60,7 @@ public class CustomWebFilterChain {
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
                 .addFilterAfter(corsFilter(), SecurityWebFiltersOrder.FIRST)
-                .addFilterAfter(SwaggerRouteFilter.getWebFilter(), SecurityWebFiltersOrder.HTTP_BASIC)
+                .addFilterAfter(SwaggerRouteFilter.getWebFilter(swaggerUtils), SecurityWebFiltersOrder.HTTP_BASIC)
                 .addFilterAfter(tokenFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterBefore(logFilter(), SecurityWebFiltersOrder.LAST)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable);
@@ -88,12 +88,18 @@ public class CustomWebFilterChain {
 
     private WebFilter tokenFilter() {
         return (exchange, chain) -> {
+            //判断生产环境，借用了一下swaggerUtils
+            if (swaggerUtils.enabledSwagger()) return chain.filter(exchange);
+
             final ServerHttpRequest request = exchange.getRequest();
 
             /* 精确的路径匹配模式 */
             final String path = request.getURI().getRawPath();
             final boolean notNeedToken = "/user/login".equals(path) || "/user/create".equals(path);
 
+            if (request.getHeaders().getFirst(SwaggerRouteFilter.HEADER_NAME) != null) {
+                return chain.filter(exchange);
+            }
             //token验证
             if (!notNeedToken) {
                 final ServerHttpResponse originalResponse = exchange.getResponse();

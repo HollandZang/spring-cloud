@@ -1,4 +1,4 @@
-//package com.holland.gateway.sqlHelper;
+//package com.holland.common.utils.sqlHelper;
 //
 //import org.apache.ibatis.executor.statement.StatementHandler;
 //import org.apache.ibatis.plugin.Interceptor;

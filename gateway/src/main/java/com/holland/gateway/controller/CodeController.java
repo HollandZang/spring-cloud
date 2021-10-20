@@ -1,7 +1,7 @@
 package com.holland.gateway.controller;
 
-import com.holland.gateway.sqlHelper.PageHelper;
-import com.holland.gateway.common.ValidateUtil;
+import com.holland.common.utils.ValidateUtil;
+import com.holland.common.utils.sqlHelper.PageHelper;
 import com.holland.gateway.domain.Code;
 import com.holland.gateway.mapper.CodeMapper;
 import com.holland.gateway.mapper.CodeTypeMapper;

@@ -1,28 +1,23 @@
 package com.holland.gateway.swagger;
 
-import org.apache.commons.lang.StringUtils;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 
 public class SwaggerRouteFilter {
-    private static final String HEADER_NAME = "X-Forwarded-Prefix";
+    public static final String HEADER_NAME = "swagger-req";
 
-    private static final String URI = "/v2/api-docs";
-
-    public static WebFilter getWebFilter() {
+    public static WebFilter getWebFilter(SwaggerUtils swaggerUtils) {
         return (exchange, chain) -> {
-            ServerHttpRequest request = exchange.getRequest();
-            String path = request.getURI().getPath();
-            if (!StringUtils.endsWithIgnoreCase(path, URI)) {
-                return chain.filter(exchange);
+            final ServerHttpRequest request = exchange.getRequest();
+            final String path = request.getURI().getPath();
+            if (swaggerUtils.enabledSwagger() && swaggerUtils.isSwaggerRequest(path)) {
+                final ServerHttpRequest newRequest = request.mutate().header(HEADER_NAME, "true").build();
+                final ServerWebExchange newExchange = exchange.mutate().request(newRequest).build();
+                return chain.filter(newExchange);
             }
 
-            //todo 过滤静态资源等
-            String basePath = path.substring(0, path.lastIndexOf(URI));
-            ServerHttpRequest newRequest = request.mutate().header(HEADER_NAME, basePath).build();
-            ServerWebExchange newExchange = exchange.mutate().request(newRequest).build();
-            return chain.filter(newExchange);
+            return chain.filter(exchange);
         };
     }
 }

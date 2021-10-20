@@ -1,6 +1,6 @@
 package com.holland.gateway.controller;
 
-import com.holland.gateway.sqlHelper.PageHelper;
+import com.holland.common.utils.sqlHelper.PageHelper;
 import com.holland.gateway.mapper.LogLoginMapper;
 import com.holland.gateway.mapper.LogMapper;
 import io.swagger.annotations.Api;
