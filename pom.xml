@@ -10,6 +10,7 @@
         <module>eureka</module>
         <module>file-system</module>
         <module>gateway</module>
+        <module>zipkin</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
