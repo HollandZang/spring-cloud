@@ -1,4 +1,4 @@
-package com.holland.zipkin.controller;
+package com.holland.email.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.holland.common.configuration.swagger;
+package com.holland.common.spring.configuration.swagger;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;

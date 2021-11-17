@@ -1,4 +1,4 @@
-package com.holland.zipkin.controller;
+package com.holland.hadoop.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;

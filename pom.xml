@@ -10,7 +10,7 @@
         <module>eureka</module>
         <module>file-system</module>
         <module>gateway</module>
-        <module>zipkin</module>
+        <module>hadoop</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -32,6 +32,7 @@
         <knife4j.version>3.0.3</knife4j.version>
         <kotlin.version>1.5.30-RC</kotlin.version>
         <testcontainers.version>1.16.0</testcontainers.version>
+        <hadoop.version>3.2.1</hadoop.version>
     </properties>
 
     <dependencies>
@@ -97,6 +98,12 @@
                 <version>${testcontainers.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-client</artifactId>
+                <version>${hadoop.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

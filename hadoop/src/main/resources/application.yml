@@ -7,7 +7,7 @@ eureka:
     hostname: ${spring.cloud.client.ip-address}
 spring:
   application:
-    name: zipkin
+    name: hadoop
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8

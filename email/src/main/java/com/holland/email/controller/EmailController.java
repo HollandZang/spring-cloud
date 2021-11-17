@@ -1,4 +1,4 @@
-package com.holland.zipkin.controller;
+package com.holland.email.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.http.ResponseEntity;

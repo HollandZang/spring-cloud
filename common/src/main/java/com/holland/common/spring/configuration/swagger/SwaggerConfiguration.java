@@ -1,4 +1,4 @@
-package com.holland.common.configuration.swagger;
+package com.holland.common.spring.configuration.swagger;
 
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;

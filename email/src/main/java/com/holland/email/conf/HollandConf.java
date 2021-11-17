@@ -1,9 +1,9 @@
-package com.holland.zipkin.conf;
+package com.holland.email.conf;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-@ComponentScan("com.holland.common.configuration")
+@ComponentScan("com.holland.common.spring.configuration")
 @Configuration
 public class HollandConf {
 }
