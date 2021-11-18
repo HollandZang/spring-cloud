@@ -10,7 +10,7 @@
             size="1024"
             readOnly="true"/>
 
-    <resultMap id="BaseResultMap" type="com.holland.gateway.domain.CodeType">
+    <resultMap id="BaseResultMap" type="com.holland.common.entity.gateway.CodeType">
         <result property="id" column="id" jdbcType="VARCHAR"/>
         <result property="des" column="des" jdbcType="VARCHAR"/>
     </resultMap>
@@ -36,13 +36,13 @@
         from `code_type`
         where `id`= #{id}
     </delete>
-    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.holland.gateway.domain.CodeType"
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.holland.common.entity.gateway.CodeType"
             useGeneratedKeys="true">
         insert into `code_type`
             (`id`, `des`)
         values (#{id,jdbcType=VARCHAR}, #{des,jdbcType=VARCHAR}) )
     </insert>
-    <update id="updateByPrimaryKey" parameterType="com.holland.gateway.domain.CodeType">
+    <update id="updateByPrimaryKey" parameterType="com.holland.common.entity.gateway.CodeType">
         update
         `code_type`
         set `des` = #{des,jdbcType=VARCHAR}

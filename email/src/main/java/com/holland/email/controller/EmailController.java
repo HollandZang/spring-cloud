@@ -1,15 +1,12 @@
 package com.holland.email.controller;
 
 import com.holland.common.entity.email.MailSend;
-import com.holland.common.spring.apis.hadoop.IEmailController;
+import com.holland.common.spring.apis.email.IEmailController;
 import com.holland.common.utils.Response;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 

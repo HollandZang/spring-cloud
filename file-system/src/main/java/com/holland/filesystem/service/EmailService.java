@@ -1,6 +1,6 @@
-package com.holland.filesystem.controller;
+package com.holland.filesystem.service;
 
-import com.holland.common.spring.apis.hadoop.IEmailController;
+import com.holland.common.spring.apis.email.IEmailController;
 import reactivefeign.spring.config.ReactiveFeignClient;
 
 @ReactiveFeignClient(value = "email")

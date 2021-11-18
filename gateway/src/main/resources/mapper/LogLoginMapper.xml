@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.holland.gateway.mapper.LogLoginMapper">
 
-    <resultMap id="BaseResultMap" type="com.holland.gateway.domain.LogLogin">
+    <resultMap id="BaseResultMap" type="com.holland.common.entity.gateway.LogLogin">
             <id property="id" column="id" jdbcType="INTEGER"/>
             <result property="operateUser" column="operate_user" jdbcType="INTEGER"/>
             <result property="operateTime" column="operate_time" jdbcType="TIMESTAMP"/>
@@ -27,7 +27,7 @@
         from `log_login`
         where  `id` = #{id,jdbcType=INTEGER}
     </select>
-    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.holland.gateway.domain.LogLogin" useGeneratedKeys="true">
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.holland.common.entity.gateway.LogLogin" useGeneratedKeys="true">
         insert into `log_login`
         <trim prefix="(" suffix=")" suffixOverrides=",">
                 <if test="operateUser != null">`operate_user`,</if>

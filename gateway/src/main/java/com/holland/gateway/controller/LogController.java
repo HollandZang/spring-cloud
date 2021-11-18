@@ -1,22 +1,20 @@
 package com.holland.gateway.controller;
 
+import com.holland.common.entity.gateway.Log;
+import com.holland.common.entity.gateway.LogLogin;
+import com.holland.common.spring.apis.gateway.ILogController;
+import com.holland.common.utils.Response;
 import com.holland.common.utils.sqlHelper.PageHelper;
 import com.holland.gateway.mapper.LogLoginMapper;
 import com.holland.gateway.mapper.LogMapper;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-import java.util.Map;
+import java.util.List;
 
-@Api(tags = "日志模块")
-@Controller
-@RequestMapping("/log")
-public class LogController {
+@RestController
+public class LogController implements ILogController {
 
     @Resource
     private LogMapper logMapper;
@@ -24,17 +22,15 @@ public class LogController {
     @Resource
     private LogLoginMapper logLoginMapper;
 
-    @ApiOperation("获取操作日志")
-    @GetMapping("/list")
-    public ResponseEntity<?> list(Integer page, Integer limit) {
+    @Override
+    public Mono<Response<List<Log>>> list(Integer page, Integer limit) {
         final PageHelper pageHelper = new PageHelper(page, limit);
-        return ResponseEntity.ok(Map.of("data", logMapper.list(pageHelper), "count", logMapper.count()));
+        return Mono.defer(() -> Mono.just(Response.success(logMapper.list(pageHelper), logMapper.count())));
     }
 
-    @ApiOperation("获取登录日志")
-    @GetMapping("/login/list")
-    public ResponseEntity<?> loginList(Integer page, Integer limit) {
+    @Override
+    public Mono<Response<List<LogLogin>>> loginList(Integer page, Integer limit) {
         final PageHelper pageHelper = new PageHelper(page, limit);
-        return ResponseEntity.ok(Map.of("data", logLoginMapper.list(pageHelper), "count", logLoginMapper.count()));
+        return Mono.defer(() -> Mono.just(Response.success(logLoginMapper.list(pageHelper), logLoginMapper.count())));
     }
 }

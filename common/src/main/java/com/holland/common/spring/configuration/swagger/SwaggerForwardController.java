@@ -2,6 +2,7 @@ package com.holland.common.spring.configuration.swagger;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -23,6 +24,9 @@ import java.util.Map;
 @Controller
 public class SwaggerForwardController {
 
+    @Value("${spring.application.name}")
+    private String name;
+
     @Resource
     private Swagger2ControllerWebFlux swagger2ControllerWebFlux;
 
@@ -33,11 +37,11 @@ public class SwaggerForwardController {
 
         final Map<String, Object> map = JSON.parseObject(documentation.getBody().value(), Map.class);
 
-        map.computeIfPresent("basePath", (k, pathsObj) -> "/filesystem");
+        map.computeIfPresent("basePath", (k, pathsObj) -> "/" + name);
         map.computeIfPresent("paths", (k, pathsObj) -> {
             final Map<String, JSONObject> paths = ((JSONObject) pathsObj).toJavaObject(Map.class);
             final Map<String, JSONObject> res = new HashMap<>(paths.size());
-            paths.forEach((k1, v) -> res.put("/filesystem" + k1, v));
+            paths.forEach((k1, v) -> res.put("/" + name + k1, v));
             return res;
         });
 

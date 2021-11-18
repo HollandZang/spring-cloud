@@ -8,7 +8,7 @@
             flushInterval="60000"
             size="1024"
             readOnly="true"/>
-    <resultMap id="BaseResultMap" type="com.holland.gateway.domain.User">
+    <resultMap id="BaseResultMap" type="com.holland.common.entity.gateway.User">
         <id property="id" column="id" jdbcType="INTEGER"/>
         <result property="loginName" column="login_name" jdbcType="VARCHAR"/>
         <result property="password" column="password" jdbcType="VARCHAR"/>
@@ -38,7 +38,7 @@
         limit #{offset},#{limit}
     </select>
 
-    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.holland.gateway.domain.User"
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.holland.common.entity.gateway.User"
             useGeneratedKeys="true">
         insert into `user`
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -54,7 +54,7 @@
             <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
         </trim>
     </insert>
-    <update id="updateByUserSelective" parameterType="com.holland.gateway.domain.User">
+    <update id="updateByUserSelective" parameterType="com.holland.common.entity.gateway.User">
         update `user`
         <set>
             <if test="password != null">

@@ -1,13 +1,13 @@
 package com.holland.gateway.mapper;
 
 import com.holland.common.utils.sqlHelper.PageHelper;
-import com.holland.gateway.domain.Log;
+import com.holland.common.entity.gateway.Log;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
 /**
- * @Entity com.holland.gateway.domain.Log
+ * @Entity com.holland.common.entity.gateway.Log
  */
 @Mapper
 public interface LogMapper {

@@ -4,9 +4,9 @@ public class Response<T> {
     public final int code;
     public final String msg;
     public final T data;
-    public final int count;
+    public final long count;
 
-    public Response(int code, String msg, T data, int count) {
+    public Response(int code, String msg, T data, long count) {
         this.code = code;
         this.msg = msg;
         this.data = data;
@@ -18,7 +18,11 @@ public class Response<T> {
     }
 
     public static <T> Response<T> success(T data) {
-        return new Response<T>(200, "", data, 0);
+        return success(data, 0L);
+    }
+
+    public static <T> Response<T> success(T data, Long count) {
+        return new Response<T>(200, "", data, count);
     }
 
     public static <T> Response<T> failed(Exception e) {

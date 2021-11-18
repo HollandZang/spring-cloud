@@ -1,4 +1,4 @@
-package com.holland.gateway.domain;
+package com.holland.common.entity.gateway;
 
 import java.io.Serializable;
 

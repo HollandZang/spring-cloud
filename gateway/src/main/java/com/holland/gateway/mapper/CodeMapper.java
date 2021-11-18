@@ -1,13 +1,13 @@
 package com.holland.gateway.mapper;
 
-import com.holland.gateway.domain.Code;
+import com.holland.common.entity.gateway.Code;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * @Entity com.holland.gateway.domain.Code
+ * @Entity com.holland.common.entity.gateway.Code
  */
 @Mapper
 public interface CodeMapper {
