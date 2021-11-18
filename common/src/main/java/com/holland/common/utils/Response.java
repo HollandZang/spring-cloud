@@ -28,4 +28,14 @@ public class Response<T> {
     public static <T> Response<T> failed(String msg) {
         return new Response<T>(500, msg, null, 0);
     }
+
+    @Override
+    public String toString() {
+        return "Response{" +
+                "code=" + code +
+                ", msg='" + msg + '\'' +
+                ", data=" + data +
+                ", count=" + count +
+                '}';
+    }
 }

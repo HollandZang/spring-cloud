@@ -32,7 +32,6 @@
         <knife4j.version>3.0.3</knife4j.version>
         <kotlin.version>1.5.30-RC</kotlin.version>
         <testcontainers.version>1.16.0</testcontainers.version>
-        <hadoop.version>3.2.1</hadoop.version>
     </properties>
 
     <dependencies>
@@ -100,11 +99,6 @@
                 <scope>import</scope>
             </dependency>
 
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-client</artifactId>
-                <version>${hadoop.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 

@@ -1,8 +1,8 @@
 package com.holland.hadoop.controller;
 
-import com.holland.common.spring.apis.hadoop.IHadoopController;
 import com.holland.common.utils.Response;
 import com.holland.hadoop.conf.HadoopConfig;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,16 +11,11 @@ import java.io.InputStream;
 
 @RestController
 @RequestMapping("core")
-public class HadoopController implements IHadoopController {
+public class HadoopController {
     @Resource
     private HadoopConfig hadoopConfig;
 
-    @Override
-    public Response<String> test(String dir) {
-        return Response.success(dir);
-    }
-
-    @Override
+    @PostMapping("/createDirectory")
     public <T> Response<T> createDirectory(String dir) {
         try {
             hadoopConfig.createDirectory(dir);
@@ -30,7 +25,7 @@ public class HadoopController implements IHadoopController {
         }
     }
 
-    @Override
+    @PostMapping("/writeFile")
     public <T> Response<T> writeFile(String path, String fileName, InputStream inputStream) {
         try {
             hadoopConfig.writeFile(path, fileName, inputStream);
@@ -40,7 +35,7 @@ public class HadoopController implements IHadoopController {
         }
     }
 
-    @Override
+    @PostMapping("/downloadFile")
     public Response<byte[]> downloadFile(String path, String fileName) {
         try {
             final byte[] bytes = hadoopConfig.downloadFile(path, fileName);

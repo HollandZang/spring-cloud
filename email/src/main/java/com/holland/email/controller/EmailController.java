@@ -1,7 +1,8 @@
 package com.holland.email.controller;
 
-import com.alibaba.fastjson.JSONObject;
-import org.springframework.http.ResponseEntity;
+import com.holland.common.entity.email.MailSend;
+import com.holland.common.spring.apis.hadoop.IEmailController;
+import com.holland.common.utils.Response;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -9,50 +10,52 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import java.util.Properties;
 
-@Controller
-@RequestMapping("email")
-public class EmailController {
+@RestController
+public class EmailController implements IEmailController {
 
-    @PostMapping("send")
-    public Mono<ResponseEntity<?>> send(@RequestBody JSONObject o) {
-        String to = o.getString("to");
-        String subject = o.getString("subject");
-        String text = o.getString("text");
+    @Override
+    public Mono<Response<String>> test(String str) {
+        System.out.println(str);
+        return Mono.defer(() -> Mono.just(Response.success(str)));
+    }
 
-        mail163(to, subject, text);
-        return Mono.defer(() -> Mono.just("OK"))
-                .map(it -> ResponseEntity.ok().body(it));
+    @Override
+    public Mono<Response<?>> send(@RequestBody MailSend mailSend) {
+        switch (mailSend.sender.host) {
+            case NETEASE_163:
+                mail163(mailSend);
+                break;
+            case GMAIL:
+                break;
+        }
+        return Mono.defer(() -> Mono.just(Response.success()));
     }
 
     /**
      * 163邮箱发送消息
      */
-    private void mail163(String to, String subject, String text) {
-        String sender = "177811671532@163.com";
+    private void mail163(MailSend mailSend) {
+        String sender = mailSend.sender.sendAddress;
 
         final JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.163.com");
-        mailSender.setPort(25);
-        mailSender.setProtocol("smtp");
+        mailSender.setHost(mailSend.sender.host.value);
+        mailSender.setPort(mailSend.sender.port);
+        mailSender.setProtocol(mailSend.sender.protocol.value);
         mailSender.setUsername(sender);
-        mailSender.setPassword("VXGSSMZKYHAYTRDD");
-        mailSender.setJavaMailProperties(new Properties() {{
-            setProperty("mail.debug", "true");
-            setProperty("mail.smtp.auth", "true");
-            setProperty("mail.smtp.starttls.enable", "true");
-            setProperty("mail.smtp.starttls.required", "true");
-        }});
+        mailSender.setPassword(mailSend.sender.password);
+        mailSender.setJavaMailProperties(mailSend.sender.host.getProperties());
         final SimpleMailMessage templateMessage = new SimpleMailMessage();
         templateMessage.setFrom(sender);
-        templateMessage.setSubject(subject);
+        templateMessage.setSubject(mailSend.subject);
 
         SimpleMailMessage msg = new SimpleMailMessage(templateMessage);
-        msg.setTo(to);
-        msg.setText(text);
+        msg.setTo(mailSend.to);
+        msg.setText(mailSend.text);
         try {
             mailSender.send(msg);
         } catch (MailException ex) {
