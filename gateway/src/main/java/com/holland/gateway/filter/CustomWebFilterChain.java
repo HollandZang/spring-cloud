@@ -1,11 +1,11 @@
 package com.holland.gateway.filter;
 
 import com.alibaba.fastjson.JSONObject;
-import com.holland.gateway.common.RedisController;
-import com.holland.gateway.common.RequestUtil;
 import com.holland.common.entity.gateway.Log;
 import com.holland.common.entity.gateway.LogLogin;
 import com.holland.common.entity.gateway.User;
+import com.holland.gateway.common.RedisController;
+import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.mapper.LogLoginMapper;
 import com.holland.gateway.mapper.LogMapper;
 import com.holland.gateway.swagger.SwaggerRouteFilter;
@@ -59,10 +59,10 @@ public class CustomWebFilterChain {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
-                .addFilterAfter(corsFilter(), SecurityWebFiltersOrder.FIRST)
-                .addFilterAfter(SwaggerRouteFilter.getWebFilter(swaggerUtils), SecurityWebFiltersOrder.HTTP_BASIC)
-                .addFilterAfter(tokenFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
-                .addFilterBefore(logFilter(), SecurityWebFiltersOrder.LAST)
+                .addFilterAt(corsFilter(), SecurityWebFiltersOrder.FIRST)
+                .addFilterAt(SwaggerRouteFilter.getWebFilter(swaggerUtils), SecurityWebFiltersOrder.HTTP_BASIC)
+                .addFilterAt(tokenFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
+                .addFilterAt(logFilter(), SecurityWebFiltersOrder.LAST)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable);
         return http.build();
     }

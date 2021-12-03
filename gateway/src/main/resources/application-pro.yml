@@ -4,10 +4,8 @@ eureka:
       defaultZone: http://root:root@localhost:8761/eureka/
 logging:
   level:
-    com.holland.gateway.filter.GatewayFilter: debug
-    com.holland.gateway.filter.CustomWebFilterChain: debug
-    com.holland.gateway.mapper: debug
-    com.holland.gateway.mapper.LogMapper.insertSelective: info
+    com.holland.gateway.filter.CustomWebFilterChain: info
+    com.holland.gateway.mapper: info
 spring:
   redis:
     host: 119.23.68.6
