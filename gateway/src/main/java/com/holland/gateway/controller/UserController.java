@@ -1,16 +1,16 @@
 package com.holland.gateway.controller;
 
-import com.alibaba.fastjson.JSONObject;
+import com.holland.common.aggregate.LoginUser;
 import com.holland.common.entity.gateway.User;
 import com.holland.common.spring.apis.gateway.IUserController;
 import com.holland.common.utils.Response;
-import com.holland.common.utils.ValidateUtil;
+import com.holland.common.utils.Validator;
 import com.holland.common.utils.sqlHelper.PageHelper;
 import com.holland.gateway.common.RedisController;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.mapper.UserMapper;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,62 +40,72 @@ public class UserController implements IUserController {
     }
 
     @Override
-    public Mono<Response<?>> login(@RequestBody User user) {
+    public Mono<Response<LoginUser>> login(@RequestBody User user) {
         final String loginName = user.getLoginName();
         final String password = user.getPassword();
-        ValidateUtil.notEmpty(loginName, "用户名");
-        ValidateUtil.notEmpty(password, "密码");
+        Validator.test(loginName, "用户名").notEmpty();
+        Validator.test(password, "密码").notEmpty();
 
-        final Optional<User> optional = userMapper.selectByLoginName(loginName);
-        if (optional.isEmpty()) {
-            return Mono.defer(() -> Mono.just(Response.failed("用户不存在")));
-        }
-        final User dbUser = optional.get();
-        if (encoder.matches(password, dbUser.getPassword())) {
-            dbUser.setPassword(null);
-            final String token = redisController.setToken(loginName, dbUser);
-            final JSONObject json = (JSONObject) JSONObject.toJSON(dbUser);
-            json.put("token", token);
-            return Mono.defer(() -> Mono.just(Response.success(json)));
-        } else {
-            return Mono.defer(() -> Mono.just(Response.failed("账号或密码错误")));
-        }
+        return Mono.defer(() -> {
+            final Optional<User> optional = userMapper.selectByLoginName(loginName);
+            if (optional.isEmpty()) {
+//                return Mono.just(Response.failed("用户不存在"));
+                return Mono.just(Response.failed("账号或密码错误"));
+            }
+            final User dbUser = optional.get();
+            if (encoder.matches(password, dbUser.getPassword())) {
+                final LoginUser vo = LoginUser.from(dbUser);
+                vo.setPassword(null);
+                vo.setToken(redisController.setToken(loginName, vo));
+                return Mono.just(Response.success(vo));
+            } else {
+                return Mono.just(Response.failed("账号或密码错误"));
+            }
+        });
     }
 
     @Override
-    public ResponseEntity<?> logout(ServerHttpRequest request) {
+    public Mono<Response<Boolean>> logout(ServerHttpRequest request, ServerHttpResponse response) {
         final String token = RequestUtil.getToken(request);
         final Boolean aBoolean = redisController.delToken(token);
-        return ResponseEntity.ok()
-                .header("Clear-Site-Data", "\"cache\", \"cookies\", \"storage\", \"executionContexts\"")
-                .body(aBoolean);
+
+        return Mono.defer(() -> {
+            response.getHeaders().add("Clear-Site-Data", "\"cache\", \"cookies\", \"storage\", \"executionContexts\"");
+            return Mono.just(Response.success(aBoolean));
+        });
     }
 
     @Override
-    public Mono<Response<?>> add(@RequestBody User user) {
-        ValidateUtil.notEmpty(user.getLoginName(), "用户名");
-        ValidateUtil.maxLength(user.getLoginName(), 16, "用户名");
-        ValidateUtil.notEmpty(user.getPassword(), "密码");
-        ValidateUtil.maxLength(user.getPassword(), 16, "密码");
+    public Mono<Response<Integer>> add(@RequestBody User user) {
+        Validator.test(user.getLoginName(), "用户名").notEmpty().maxLength(16);
+        Validator.test(user.getPassword(), "密码").notEmpty().maxLength(16);
 
-        final Optional<User> optional = userMapper.selectByLoginName(user.getLoginName());
-        if (optional.isPresent()) {
-            return Mono.defer(() -> Mono.just(Response.failed("账号已存在")));
-        }
+        return Mono.defer(() -> {
+            final Optional<User> optional = userMapper.selectByLoginName(user.getLoginName());
+            if (optional.isPresent()) {
+                return Mono.just(Response.failed("账号已存在"));
+            }
 
-        final String encode = encoder.encode(user.getPassword());
-        final Date now = new Date();
-        final int row = userMapper.insertSelective(
-                user.setPassword(encode)
-                        .setCreateTime(now)
-                        .setUpdateTime(now));
-        return Mono.defer(() -> Mono.just(Response.success(row)));
+            final String encode = encoder.encode(user.getPassword());
+            final Date now = new Date();
+            final int row = userMapper.insertSelective(
+                    user.setPassword(encode)
+                            .setCreateTime(now)
+                            .setUpdateTime(now));
+            return Mono.just(Response.success(row));
+        });
     }
 
     @Override
-    public Mono<Response<?>> update(ServerHttpRequest request, @RequestBody User user) {
+    public Mono<Response<Integer>> update(ServerHttpRequest request, @RequestBody User user) {
+        Validator.test(user.getPassword(), "密码").maxLength(16);
+
         user.setLoginName(RequestUtil.getLoginName(request));
-        ValidateUtil.maxLength(user.getPassword(), 16, "密码");
+        final Optional<User> optional = userMapper.selectByLoginName(user.getLoginName());
+        if (optional.isEmpty()) {
+            return Mono.defer(() -> Mono.just(Response.failed("资源不存在")));
+        }
+        // TODO: 2022/2/7 旧密码匹配尝试
 
         if (StringUtils.hasText(user.getPassword())) {
             user.setPassword(encoder.encode(user.getPassword()));

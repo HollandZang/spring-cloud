@@ -6,7 +6,7 @@ public class Response<T> {
     public final T data;
     public final long count;
 
-    public Response(int code, String msg, T data, long count) {
+    private Response(int code, String msg, T data, long count) {
         this.code = code;
         this.msg = msg;
         this.data = data;

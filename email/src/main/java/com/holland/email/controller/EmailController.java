@@ -3,7 +3,6 @@ package com.holland.email.controller;
 import com.holland.common.entity.email.MailSend;
 import com.holland.common.spring.apis.email.IEmailController;
 import com.holland.common.utils.Response;
-import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,21 +15,25 @@ import java.util.Properties;
 public class EmailController implements IEmailController {
 
     @Override
-    public Mono<Response<String>> test(String str) {
+    public Mono<Response<String>> test(@RequestBody String str) {
         System.out.println(str);
         return Mono.defer(() -> Mono.just(Response.success(str)));
     }
 
     @Override
     public Mono<Response<?>> send(@RequestBody MailSend mailSend) {
-        switch (mailSend.sender.host) {
-            case NETEASE_163:
-                mail163(mailSend);
-                break;
-            case GMAIL:
-                break;
-        }
-        return Mono.defer(() -> Mono.just(Response.success()));
+        return Mono.defer(() -> {
+            switch (mailSend.sender.host) {
+                case NETEASE_163:
+                    mail163(mailSend);
+                    break;
+                case GMAIL:
+                    break;
+                default:
+                    return Mono.just(Response.failed("无效的host：" + mailSend.sender.host));
+            }
+            return Mono.just(Response.success());
+        });
     }
 
     /**
@@ -53,17 +56,13 @@ public class EmailController implements IEmailController {
         SimpleMailMessage msg = new SimpleMailMessage(templateMessage);
         msg.setTo(mailSend.to);
         msg.setText(mailSend.text);
-        try {
-            mailSender.send(msg);
-        } catch (MailException ex) {
-            // simply log it and go on...
-            System.err.println(ex.getMessage());
-        }
+
+        mailSender.send(msg);
     }
 
     /**
      * gmail邮箱发送消息
-     * 暂不可用，可能是授权码的问题
+     * todo 暂不可用，可能是授权码的问题
      */
     private void gmail() {
         String sender = "zhn.pop@gmail.com";
@@ -91,11 +90,7 @@ public class EmailController implements IEmailController {
         SimpleMailMessage msg = new SimpleMailMessage(templateMessage);
         msg.setTo(address);
         msg.setText("test email");
-        try {
-            mailSender.send(msg);
-        } catch (MailException ex) {
-            // simply log it and go on...
-            System.err.println(ex.getMessage());
-        }
+
+        mailSender.send(msg);
     }
 }

@@ -4,7 +4,7 @@ import com.holland.common.entity.gateway.Code;
 import com.holland.common.entity.gateway.CodeType;
 import com.holland.common.spring.apis.gateway.ICodeController;
 import com.holland.common.utils.Response;
-import com.holland.common.utils.ValidateUtil;
+import com.holland.common.utils.Validator;
 import com.holland.common.utils.sqlHelper.PageHelper;
 import com.holland.gateway.mapper.CodeMapper;
 import com.holland.gateway.mapper.CodeTypeMapper;
@@ -27,7 +27,7 @@ public class CodeController implements ICodeController {
 
     @Override
     public Mono<Response<List<Map<String, String>>>> all(String type) {
-        ValidateUtil.notEmpty(type, "类别代码");
+        Validator.test(type, "类别代码").notEmpty();
         return Mono.defer(() -> Mono.just(Response.success(codeMapper.all(type))));
     }
 
@@ -39,10 +39,9 @@ public class CodeController implements ICodeController {
 
     @Override
     public Mono<Response<Integer>> add(@RequestBody Code code) {
-        ValidateUtil.notEmpty(code.getType(), "类别代码");
-        ValidateUtil.notEmpty(code.getCode(), "值");
-        ValidateUtil.notEmpty(code.getName(), "名称");
-        ValidateUtil.maxLength(code.getName(), 256, "名称");
+        Validator.test(code.getType(), "类别代码").notEmpty();
+        Validator.test(code.getCode(), "值").notEmpty();
+        Validator.test(code.getName(), "名称").notEmpty().maxLength(256);
         return Mono.defer(() -> Mono.just(Response.success(codeMapper.insert(code))));
     }
 }

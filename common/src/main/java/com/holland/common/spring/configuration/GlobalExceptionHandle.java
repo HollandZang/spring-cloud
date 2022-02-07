@@ -1,7 +1,7 @@
 package com.holland.common.spring.configuration;
 
 import com.holland.common.utils.Response;
-import com.holland.common.utils.ValidateUtil;
+import com.holland.common.utils.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,7 +21,7 @@ public class GlobalExceptionHandle {
         return Response.failed(e);
     }
 
-    @ExceptionHandler(value = {BindException.class, ValidateUtil.ParameterException.class})
+    @ExceptionHandler(value = {BindException.class, Validator.ParameterException.class})
     public Response<?> handleParameter(Exception e) {
         return Response.failed("参数解析异常: " + e.getMessage());
     }
@@ -32,4 +32,3 @@ public class GlobalExceptionHandle {
     }
 
 }
-
