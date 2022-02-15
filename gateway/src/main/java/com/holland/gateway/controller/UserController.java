@@ -54,6 +54,8 @@ public class UserController implements IUserController {
             }
             final User dbUser = optional.get();
             if (encoder.matches(password, dbUser.getPassword())) {
+                redisController.delToken(dbUser);
+
                 final LoginUser vo = LoginUser.from(dbUser);
                 vo.setPassword(null);
                 vo.setToken(redisController.setToken(loginName, vo));

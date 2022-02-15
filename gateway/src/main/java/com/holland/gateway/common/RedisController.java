@@ -2,6 +2,7 @@ package com.holland.gateway.common;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.support.spring.FastJsonRedisSerializer;
+import com.holland.common.entity.gateway.User;
 import com.holland.common.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +37,11 @@ public class RedisController {
 
     public Boolean delToken(String token) {
         return redisTemplate.delete(tokenKeyPrefix + token);
+    }
+
+    public void delToken(User user) {
+        redisTemplate.keys(tokenKeyPrefix + user.getLoginName() + "|*")
+                .forEach(redisTemplate::delete);
     }
 
     @Bean

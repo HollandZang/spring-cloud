@@ -24,7 +24,7 @@ public interface ICodeController {
 
     @ApiOperation("获取所有类别代码")
     @GetMapping("/type/list")
-    Mono<Response<Response<List<CodeType>>>> loginList(Integer page, Integer limit);
+    Mono<Response<List<CodeType>>> loginList(Integer page, Integer limit);
 
     @ApiOperation("在某个类别代码下新增条目")
     @PostMapping

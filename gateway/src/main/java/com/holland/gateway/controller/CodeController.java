@@ -32,9 +32,9 @@ public class CodeController implements ICodeController {
     }
 
     @Override
-    public Mono<Response<Response<List<CodeType>>>> loginList(Integer page, Integer limit) {
+    public Mono<Response<List<CodeType>>> loginList(Integer page, Integer limit) {
         final PageHelper pageHelper = new PageHelper(page, limit);
-        return Mono.defer(() -> Mono.just(Response.success(Response.success(codeTypeMapper.list(pageHelper), codeTypeMapper.count()))));
+        return Mono.defer(() -> Mono.just(Response.success(codeTypeMapper.list(pageHelper), codeTypeMapper.count())));
     }
 
     @Override

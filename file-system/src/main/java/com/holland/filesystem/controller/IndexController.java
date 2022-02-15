@@ -1,5 +1,6 @@
 package com.holland.filesystem.controller;
 
+import com.holland.common.utils.Response;
 import com.holland.filesystem.service.EmailService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,16 @@ public class IndexController {
     @GetMapping("feignTest")
     public Mono<ResponseEntity<?>> feignTest() {
         return emailService.test("asdzxcv")
+                .doOnError(throwable -> System.out.println("doOnError"))
+//                .onErrorResume(throwable -> Mono.just(Response.failed(throwable)))
+                .onErrorReturn(Response.failed("调用 {} 服务失败", "emailService"))
+//                .onErrorContinue(Response.failed("调用 {} 服务失败", "emailService"))
                 .doOnNext(System.out::println)
+                .doOnNext(stringResponse -> {
+                    final int i = 1 / 0;
+                })
+                .doOnNext(System.out::println)
+                .onErrorResume(throwable -> Mono.just(Response.failed(throwable)))
                 .map(it -> ResponseEntity.ok().body(it));
     }
 }
