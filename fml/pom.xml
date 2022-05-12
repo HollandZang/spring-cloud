@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>file-system</artifactId>
+    <artifactId>fml</artifactId>
 
     <dependencies>
         <dependency>
@@ -33,26 +33,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-mongodb</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-micro-spring-boot-starter</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.playtika.reactivefeign</groupId>
-            <artifactId>feign-reactor-spring-cloud-starter</artifactId>
-            <type>pom</type>
         </dependency>
     </dependencies>
 </project>
