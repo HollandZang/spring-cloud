@@ -25,6 +25,12 @@ public class HadoopController {
         return Response.success();
     }
 
+    @PutMapping("/file/{path}/{fileName}")
+    public <T> Response<T> appendFile(@PathVariable String path, @PathVariable String fileName, InputStream inputStream) {
+        hadoop.appendFile(path, fileName, inputStream);
+        return Response.success();
+    }
+
     @GetMapping("/file/{path}/{fileName}")
     public Response<byte[]> downloadFile(@PathVariable String path, @PathVariable String fileName) {
         final byte[] bytes = hadoop.downloadFile(path, fileName);
