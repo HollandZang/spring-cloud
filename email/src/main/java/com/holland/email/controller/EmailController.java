@@ -80,7 +80,7 @@ public class EmailController implements IEmailController {
             setProperty("mail.smtp.starttls.required", "true");
             setProperty("mail.smtp.quitwait", "false");
             setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-            setProperty("mail.smtp.password", "wszhn001");
+            setProperty("mail.smtp.password", "");
         }});
         final SimpleMailMessage templateMessage = new SimpleMailMessage();
         templateMessage.setFrom(sender);
