@@ -13,35 +13,23 @@ import java.io.InputStream;
 @RequestMapping("core")
 public class HadoopController {
     @Resource
-    private HadoopConfig hadoopConfig;
+    private HadoopConfig hadoop;
 
     @PostMapping("/createDirectory")
     public <T> Response<T> createDirectory(String dir) {
-        try {
-            hadoopConfig.createDirectory(dir);
-            return Response.success();
-        } catch (Exception e) {
-            return Response.failed(e);
-        }
+        hadoop.createDirectory(dir);
+        return Response.success();
     }
 
     @PostMapping("/writeFile")
     public <T> Response<T> writeFile(String path, String fileName, InputStream inputStream) {
-        try {
-            hadoopConfig.writeFile(path, fileName, inputStream);
-            return Response.success();
-        } catch (Exception e) {
-            return Response.failed(e);
-        }
+        hadoop.writeFile(path, fileName, inputStream);
+        return Response.success();
     }
 
     @PostMapping("/downloadFile")
     public Response<byte[]> downloadFile(String path, String fileName) {
-        try {
-            final byte[] bytes = hadoopConfig.downloadFile(path, fileName);
-            return Response.success(bytes);
-        } catch (Exception e) {
-            return Response.failed(e);
-        }
+        final byte[] bytes = hadoop.downloadFile(path, fileName);
+        return Response.success(bytes);
     }
 }
