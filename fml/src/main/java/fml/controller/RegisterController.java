@@ -1,6 +1,7 @@
 package fml.controller;
 
 import com.holland.common.utils.Files;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,9 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,7 +31,7 @@ public class RegisterController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(MultipartFile multipartFile, String fullName, LifecycleEnum lifecycle) throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public ResponseEntity<?> register(MultipartFile multipartFile, String fullName, LifecycleEnum lifecycle) throws Exception {
         final byte[] bytes = multipartFile.getBytes();
         final String filename = multipartFile.getOriginalFilename();
         assert filename != null;
@@ -78,8 +77,15 @@ public class RegisterController {
 
     @ResponseBody
     @PostMapping("/invoke")
-    public Object invoke(@RequestBody InvokeDTO invokeDTO) throws Exception {
-        final Class<?> aClass = cl.loadClass(invokeDTO.fullName);
+    public ResponseEntity<?> invoke(@RequestBody InvokeDTO invokeDTO) throws Exception {
+        final Class<?> aClass;
+        try {
+            aClass = cl.loadClass(invokeDTO.fullName);
+        } catch (ClassNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("ClassNotFound: " + invokeDTO.fullName);
+        }
+
         final Class<?>[] cs = new Class<?>[invokeDTO.classes.length];
         for (int i = 0; i < invokeDTO.classes.length; i++) {
             cs[i] = Class.forName(invokeDTO.classes[i]);
@@ -89,7 +95,7 @@ public class RegisterController {
         Object o = injectMap.get(invokeDTO.fullName);
         if (o == null)
             o = aClass.getDeclaredConstructor().newInstance();
-        return run.invoke(o, invokeDTO.args);
+        return ResponseEntity.ok().body(run.invoke(o, invokeDTO.args));
     }
 
     public static class InvokeDTO {
