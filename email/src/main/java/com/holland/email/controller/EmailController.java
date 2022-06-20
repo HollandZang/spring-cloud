@@ -73,15 +73,15 @@ public class EmailController implements IEmailController {
         mailSender.setProtocol("smtp");
         mailSender.setUsername(sender);
         mailSender.setPassword("");
-        mailSender.setJavaMailProperties(new Properties() {{
-            setProperty("mail.debug", "true");
-            setProperty("mail.smtp.auth", "true");
-            setProperty("mail.smtp.starttls.enable", "true");
-            setProperty("mail.smtp.starttls.required", "true");
-            setProperty("mail.smtp.quitwait", "false");
-            setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-            setProperty("mail.smtp.password", "");
-        }});
+        final Properties properties = new Properties();
+        properties.setProperty("mail.debug", "true");
+        properties.setProperty("mail.smtp.auth", "true");
+        properties.setProperty("mail.smtp.starttls.enable", "true");
+        properties.setProperty("mail.smtp.starttls.required", "true");
+        properties.setProperty("mail.smtp.quitwait", "false");
+        properties.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        properties.setProperty("mail.smtp.password", "");
+        mailSender.setJavaMailProperties(properties);
         final SimpleMailMessage templateMessage = new SimpleMailMessage();
         templateMessage.setFrom(sender);
         templateMessage.setSubject("Your order");

@@ -9,6 +9,7 @@ public class LoginUser extends User {
     public static LoginUser from(User user) {
         final LoginUser loginUser = new LoginUser();
         BeanUtils.copyProperties(user, loginUser);
+        loginUser.setPassword(null);
         return loginUser;
     }
 

@@ -4,8 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.holland.common.entity.gateway.Log;
 import com.holland.common.entity.gateway.LogLogin;
 import com.holland.common.entity.gateway.User;
-import com.holland.gateway.common.RedisController;
 import com.holland.gateway.common.RequestUtil;
+import com.holland.gateway.common.UserCache;
 import com.holland.gateway.mapper.LogLoginMapper;
 import com.holland.gateway.mapper.LogMapper;
 import com.holland.gateway.swagger.SwaggerRouteFilter;
@@ -43,7 +43,7 @@ import java.util.Date;
 public class CustomWebFilterChain {
 
     @Resource
-    private RedisController redisController;
+    private UserCache userCache;
 
     @Resource
     private SwaggerUtils swaggerUtils;
@@ -78,7 +78,7 @@ public class CustomWebFilterChain {
                     httpHeaders.add("Access-Control-Allow-Origin", httpHeaders.getOrigin());
                     httpHeaders.add("Access-Control-Allow-Credentials", "true");
                     httpHeaders.add("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE");
-                    httpHeaders.add("Access-Control-Allow-Headers", "Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma, Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With, Authorization,holland_token");
+                    httpHeaders.add("Access-Control-Allow-Headers", "Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma, Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With, Authorization, HAuth");
                     return super.writeWith(body);
                 }
             };
@@ -111,7 +111,7 @@ public class CustomWebFilterChain {
                     return originalResponse.setComplete();
                 }
                 //token验证: token有效性
-                final Object auth = redisController.getToken(token);
+                final Object auth = userCache.get(token);
                 if (auth == null) {
                     originalResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
                     return originalResponse.setComplete();

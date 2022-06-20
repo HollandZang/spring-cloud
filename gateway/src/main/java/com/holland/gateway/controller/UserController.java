@@ -6,8 +6,8 @@ import com.holland.common.spring.apis.gateway.IUserController;
 import com.holland.common.utils.Response;
 import com.holland.common.utils.Validator;
 import com.holland.common.utils.sqlHelper.PageHelper;
-import com.holland.gateway.common.RedisController;
 import com.holland.gateway.common.RequestUtil;
+import com.holland.gateway.common.UserCache;
 import com.holland.gateway.mapper.UserMapper;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -29,7 +29,7 @@ public class UserController implements IUserController {
     private UserMapper userMapper;
 
     @Resource
-    private RedisController redisController;
+    private UserCache userCache;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(8);
 
@@ -43,7 +43,7 @@ public class UserController implements IUserController {
     public Mono<Response<LoginUser>> login(@RequestBody User user) {
         final String loginName = user.getLoginName();
         final String password = user.getPassword();
-        Validator.test(loginName, "用户名").notEmpty();
+        Validator.test(loginName, "用户名").notEmpty().minLength(8);
         Validator.test(password, "密码").notEmpty();
 
         return Mono.defer(() -> {
@@ -54,11 +54,11 @@ public class UserController implements IUserController {
             }
             final User dbUser = optional.get();
             if (encoder.matches(password, dbUser.getPassword())) {
-                redisController.delToken(dbUser);
+                userCache.delByLoginName(dbUser.getLoginName());
 
                 final LoginUser vo = LoginUser.from(dbUser);
                 vo.setPassword(null);
-                vo.setToken(redisController.setToken(loginName, vo));
+                vo.setToken(userCache.cache(loginName, user));
                 return Mono.just(Response.success(vo));
             } else {
                 return Mono.just(Response.failed("账号或密码错误"));
@@ -69,7 +69,7 @@ public class UserController implements IUserController {
     @Override
     public Mono<Response<Boolean>> logout(ServerHttpRequest request, ServerHttpResponse response) {
         final String token = RequestUtil.getToken(request);
-        final Boolean aBoolean = redisController.delToken(token);
+        final Boolean aBoolean = userCache.del(token);
 
         return Mono.defer(() -> {
             response.getHeaders().add("Clear-Site-Data", "\"cache\", \"cookies\", \"storage\", \"executionContexts\"");

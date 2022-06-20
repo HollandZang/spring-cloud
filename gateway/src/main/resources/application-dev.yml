@@ -10,6 +10,7 @@ spring:
   redis:
     host: localhost
     port: 6379
+    # MINUTES
     token-timeout: 60
     token-key-prefix: "holland:"
   cache:

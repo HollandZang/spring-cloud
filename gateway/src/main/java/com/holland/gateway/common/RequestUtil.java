@@ -5,7 +5,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 public class RequestUtil {
 
     public static String getToken(ServerHttpRequest request) {
-        return request.getHeaders().getFirst("holland_token");
+        return request.getHeaders().getFirst("HAuth");
     }
 
     public static String getLoginName(ServerHttpRequest request) {

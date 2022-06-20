@@ -25,9 +25,8 @@ public class SwaggerResourceConfig implements SwaggerResourcesProvider {
          * 在通过发现服务找到其他需要添加到swagger的模块，同时排除掉没有swagger模块防止报错
          * swagger调用地址应该是`/v2/api-docs`，但是knife4j访问其他模块时请求地址会有异常，所以用`/swagger/v2/api-docs`调原接口并修改参数里面的地址
          */
-        List<SwaggerResource> resources = new ArrayList<>() {{
-            add(swaggerResource("gateway", "/v2/api-docs"));
-        }};
+        List<SwaggerResource> resources = new ArrayList<>();
+        resources.add(swaggerResource("gateway", "/v2/api-docs"));
 
         discoveryClient.getServices()
                 .stream()
@@ -47,9 +46,8 @@ public class SwaggerResourceConfig implements SwaggerResourcesProvider {
 
     @Override
     public List<SwaggerResource> get() {
-        List<SwaggerResource> resources = new ArrayList<>() {{
-            add(swaggerResource("gateway", "/v2/api-docs"));
-        }};
+        List<SwaggerResource> resources = new ArrayList<>();
+        resources.add(swaggerResource("gateway", "/v2/api-docs"));
 
         List<String> routes = new ArrayList<>();
         routeLocator.getRoutes().subscribe(route -> routes.add(route.getId()));

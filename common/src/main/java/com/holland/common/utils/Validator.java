@@ -46,6 +46,28 @@ public class Validator {
         return this;
     }
 
+    public Validator minLength(int minLen) {
+        if (field == null) {
+            return this;
+        }
+        if (field instanceof Number) {
+            if (String.valueOf(field).length() < minLen) {
+                ParameterException.accept("字段[%s]长度不能少于[%s]个字节", fieldName, minLen);
+            }
+        }
+
+        if (field instanceof String) {
+            int len = 0;
+            for (char c : ((String) this.field).toCharArray()) {
+                len += c > 127 || c == 97 ? 2 : 1;
+                if (len > minLen) {
+                    ParameterException.accept("字段[%s]长度不能少于[%s]个字节", fieldName, minLen);
+                }
+            }
+        }
+        return this;
+    }
+
     public static class ParameterException extends RuntimeException {
         private ParameterException(String message) {
             super(message);

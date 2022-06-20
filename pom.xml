@@ -12,6 +12,7 @@
         <module>gateway</module>
         <module>hadoop</module>
         <module>fml</module>
+        <module>db</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
