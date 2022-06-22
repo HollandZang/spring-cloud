@@ -43,8 +43,8 @@ public class UserController implements IUserController {
     public Mono<Response<LoginUser>> login(@RequestBody User user) {
         final String loginName = user.getLoginName();
         final String password = user.getPassword();
-        Validator.test(loginName, "用户名").notEmpty().minLength(8);
-        Validator.test(password, "密码").notEmpty();
+        Validator.test(user.getLoginName(), "用户名").notEmpty().minLength(8).maxLength(16);
+        Validator.test(user.getPassword(), "密码").notEmpty().maxLength(16);
 
         return Mono.defer(() -> {
             final Optional<User> optional = userMapper.selectByLoginName(loginName);
@@ -79,7 +79,7 @@ public class UserController implements IUserController {
 
     @Override
     public Mono<Response<Integer>> add(@RequestBody User user) {
-        Validator.test(user.getLoginName(), "用户名").notEmpty().maxLength(16);
+        Validator.test(user.getLoginName(), "用户名").notEmpty().minLength(8).maxLength(16);
         Validator.test(user.getPassword(), "密码").notEmpty().maxLength(16);
 
         return Mono.defer(() -> {
