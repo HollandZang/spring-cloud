@@ -1,5 +1,8 @@
 package com.holland.common.entity.gateway;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -11,26 +14,28 @@ public class LogLogin implements Serializable {
     /**
      * 
      */
+    @TableId
     private Integer id;
 
     /**
      * 操作人
      */
-    private String operateUser;
+    private String operate_user;
 
     /**
      * 操作时间
      */
-    private Date operateTime;
+    private Date operate_time;
 
     /**
      * 操作类型 1: 登录  0: 登出
      */
-    private String operateType;
+    private String operate_type;
 
     /**
      * 指明通过什么软件、项目登录
      */
+    @TableField("'from'")
     private String from;
 
     /**
@@ -59,30 +64,30 @@ public class LogLogin implements Serializable {
         return this;
     }
 
-    public String getOperateUser() {
-        return operateUser;
+    public String getOperate_user() {
+        return operate_user;
     }
 
-    public LogLogin setOperateUser(String operateUser) {
-        this.operateUser = operateUser;
+    public LogLogin setOperate_user(String operate_user) {
+        this.operate_user = operate_user;
         return this;
     }
 
-    public Date getOperateTime() {
-        return operateTime;
+    public Date getOperate_time() {
+        return operate_time;
     }
 
-    public LogLogin setOperateTime(Date operateTime) {
-        this.operateTime = operateTime;
+    public LogLogin setOperate_time(Date operate_time) {
+        this.operate_time = operate_time;
         return this;
     }
 
-    public String getOperateType() {
-        return operateType;
+    public String getOperate_type() {
+        return operate_type;
     }
 
-    public LogLogin setOperateType(String operateType) {
-        this.operateType = operateType;
+    public LogLogin setOperate_type(String operate_type) {
+        this.operate_type = operate_type;
         return this;
     }
 

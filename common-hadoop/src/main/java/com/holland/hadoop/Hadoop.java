@@ -1,6 +1,5 @@
-package com.holland.hadoop.conf;
+package com.holland.hadoop;
 
-import org.apache.commons.compress.compressors.gzip.GzipUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -15,12 +14,12 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class HadoopConfig {
+public class Hadoop {
 
     private final FileSystem hdfs;
     private final String appName;
 
-    public HadoopConfig(String hdfsPath, String appName) throws IOException, URISyntaxException {
+    public Hadoop(String hdfsPath, String appName) throws IOException, URISyntaxException {
         this.appName = appName;
         this.hdfs = FileSystem.get(new URI(hdfsPath), new Configuration());
     }

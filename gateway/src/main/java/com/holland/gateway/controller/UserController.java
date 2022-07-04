@@ -1,11 +1,11 @@
 package com.holland.gateway.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.holland.common.aggregate.LoginUser;
 import com.holland.common.entity.gateway.User;
 import com.holland.common.spring.apis.gateway.IUserController;
 import com.holland.common.utils.Response;
 import com.holland.common.utils.Validator;
-import com.holland.common.utils.sqlHelper.PageHelper;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.common.UserCache;
 import com.holland.gateway.mapper.UserMapper;
@@ -24,7 +24,6 @@ import java.util.Optional;
 
 @RestController
 public class UserController implements IUserController {
-
     @Resource
     private UserMapper userMapper;
 
@@ -34,16 +33,16 @@ public class UserController implements IUserController {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(8);
 
     @Override
-    public Mono<Response<List<User>>> list(Integer page, Integer limit) {
-        final PageHelper pageHelper = new PageHelper(page, limit);
-        return Mono.defer(() -> Mono.just(Response.success(userMapper.list(pageHelper), userMapper.count())));
+    public Mono<Response<List<User>>> list(Page<User> page) {
+        final Page<User> userPage = userMapper.selectPage(page, null);
+        return Mono.defer(() -> Mono.just(Response.success(userPage)));
     }
 
     @Override
     public Mono<Response<LoginUser>> login(@RequestBody User user) {
-        final String loginName = user.getLoginName();
+        final String loginName = user.getLogin_name();
         final String password = user.getPassword();
-        Validator.test(user.getLoginName(), "用户名").notEmpty().minLength(8).maxLength(16);
+        Validator.test(user.getLogin_name(), "用户名").notEmpty().minLength(8).maxLength(16);
         Validator.test(user.getPassword(), "密码").notEmpty().maxLength(16);
 
         return Mono.defer(() -> {
@@ -54,7 +53,7 @@ public class UserController implements IUserController {
             }
             final User dbUser = optional.get();
             if (encoder.matches(password, dbUser.getPassword())) {
-                userCache.delByLoginName(dbUser.getLoginName());
+                userCache.delByLoginName(dbUser.getLogin_name());
 
                 final LoginUser vo = LoginUser.from(dbUser);
                 vo.setPassword(null);
@@ -79,11 +78,11 @@ public class UserController implements IUserController {
 
     @Override
     public Mono<Response<Integer>> add(@RequestBody User user) {
-        Validator.test(user.getLoginName(), "用户名").notEmpty().minLength(8).maxLength(16);
+        Validator.test(user.getLogin_name(), "用户名").notEmpty().minLength(8).maxLength(16);
         Validator.test(user.getPassword(), "密码").notEmpty().maxLength(16);
 
         return Mono.defer(() -> {
-            final Optional<User> optional = userMapper.selectByLoginName(user.getLoginName());
+            final Optional<User> optional = userMapper.selectByLoginName(user.getLogin_name());
             if (optional.isPresent()) {
                 return Mono.just(Response.failed("账号已存在"));
             }
@@ -92,8 +91,8 @@ public class UserController implements IUserController {
             final Date now = new Date();
             final int row = userMapper.insertSelective(
                     user.setPassword(encode)
-                            .setCreateTime(now)
-                            .setUpdateTime(now));
+                            .setCreate_time(now)
+                            .setUpdate_time(now));
             return Mono.just(Response.success(row));
         });
     }
@@ -102,8 +101,8 @@ public class UserController implements IUserController {
     public Mono<Response<Integer>> update(ServerHttpRequest request, @RequestBody User user) {
         Validator.test(user.getPassword(), "密码").maxLength(16);
 
-        user.setLoginName(RequestUtil.getLoginName(request));
-        final Optional<User> optional = userMapper.selectByLoginName(user.getLoginName());
+        user.setLogin_name(RequestUtil.getLoginName(request));
+        final Optional<User> optional = userMapper.selectByLoginName(user.getLogin_name());
         if (optional.isEmpty()) {
             return Mono.defer(() -> Mono.just(Response.failed("资源不存在")));
         }
@@ -114,7 +113,7 @@ public class UserController implements IUserController {
         }
 
         final int row = userMapper.updateByUserSelective(
-                user.setUpdateTime(new Date()));
+                user.setUpdate_time(new Date()));
         if (row == 0) {
             return Mono.defer(() -> Mono.just(Response.failed("资源不存在")));
         }

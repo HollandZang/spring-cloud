@@ -1,12 +1,9 @@
 package com.holland.gateway.filter;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.holland.common.entity.gateway.Log;
 import com.holland.common.entity.gateway.LogLogin;
 import com.holland.common.entity.gateway.User;
-import com.holland.common.entity.json_rpc2.Request;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.common.UserCache;
 import com.holland.gateway.mapper.LogLoginMapper;
@@ -40,7 +37,6 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.List;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -234,15 +230,15 @@ public class CustomWebFilterChain {
     private void logLogin(ServerHttpRequest request, HttpStatus statusCode, String respBody, String requestBody) {
         /*指明通过什么软件、项目登录*/
         final String from = request.getHeaders().getFirst("User-Agent");
-        final String loginName = JSONObject.parseObject(requestBody, User.class).getLoginName();
+        final String loginName = JSONObject.parseObject(requestBody, User.class).getLogin_name();
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
         final int result = statusCode.value();
 
         try {
             logLoginMapper.insertSelective(new LogLogin()
-                    .setOperateUser(loginName)
-                    .setOperateTime(new Date())
-                    .setOperateType("1")
+                    .setOperate_user(loginName)
+                    .setOperate_time(new Date())
+                    .setOperate_type("1")
                     .setFrom(from)
                     .setIp(ip)
                     .setResult(result)
@@ -259,9 +255,9 @@ public class CustomWebFilterChain {
 
         try {
             logLoginMapper.insertSelective(new LogLogin()
-                    .setOperateUser(loginName)
-                    .setOperateTime(new Date())
-                    .setOperateType("0")
+                    .setOperate_user(loginName)
+                    .setOperate_time(new Date())
+                    .setOperate_type("0")
                     .setIp(ip)
                     .setResult(result)
                     .setResponse(respBody));

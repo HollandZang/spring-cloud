@@ -1,5 +1,8 @@
 package com.holland.common.utils;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,25 +20,29 @@ public class Response<T> {
     }
 
     public static <T> Response<T> success() {
-        return success(null);
+        return success(null, 0L);
     }
 
     public static <T> Response<T> success(T data) {
         return success(data, 0L);
     }
 
+    public static <T> Response<List<T>> success(Page<T> page) {
+        return new Response<>(200, "", page.getRecords(), page.getTotal());
+    }
+
     public static <T> Response<T> success(T data, Long count) {
-        return new Response<T>(200, "", data, count);
+        return new Response<>(200, "", data, count);
     }
 
     public static <T> Response<T> failed(Throwable e) {
-        return new Response<T>(500, e.getClass().getName() + "::" + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()), null, 0);
+        return new Response<>(500, e.getClass().getName() + "::" + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()), null, 0);
     }
 
     private static final Pattern LOGGER_COMPILE = Pattern.compile("\\{}");
 
     public static <T> Response<T> failed(String msg, Object... args) {
-        if (args.length == 0) return new Response<T>(500, msg, null, 0);
+        if (args.length == 0) return new Response<>(500, msg, null, 0);
 
         final StringBuilder newMsg = new StringBuilder();
         final Matcher matcher = LOGGER_COMPILE.matcher(msg);
@@ -49,7 +56,7 @@ public class Response<T> {
                 break;
             }
         }
-        return new Response<T>(500, newMsg.toString(), null, 0);
+        return new Response<>(500, newMsg.toString(), null, 0);
     }
 
     @Override

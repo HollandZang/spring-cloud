@@ -39,7 +39,7 @@ public class UserCache extends RedisCache {
     public CacheUser getByLoginName(String loginName) {
         for (String token : redisTemplate.keys(tokenKeyPrefix + getPre(loginName) + "*")) {
             final CacheUser cacheUser = JSON.parseObject((String) redisTemplate.opsForValue().get(token), CacheUser.class);
-            if (loginName.equals(cacheUser.getLoginName())) {
+            if (loginName.equals(cacheUser.getLogin_name())) {
                 return cacheUser;
             }
         }

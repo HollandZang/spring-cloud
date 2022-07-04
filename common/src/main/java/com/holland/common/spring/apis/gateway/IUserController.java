@@ -1,5 +1,6 @@
 package com.holland.common.spring.apis.gateway;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.holland.common.aggregate.LoginUser;
 import com.holland.common.entity.gateway.User;
 import com.holland.common.utils.Response;
@@ -17,7 +18,7 @@ import java.util.List;
 public interface IUserController {
     @ApiOperation("获取用户列表")
     @GetMapping("/list")
-    Mono<Response<List<User>>> list(Integer page, Integer limit);
+    Mono<Response<List<User>>> list(Page<User> page);
 
     @ApiOperation("登录")
     @PostMapping("/login")

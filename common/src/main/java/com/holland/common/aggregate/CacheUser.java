@@ -9,9 +9,9 @@ public class CacheUser extends User {
     public static CacheUser from(User user) {
         return (CacheUser) new CacheUser()
                 .setId(user.getId())
-                .setLoginName(user.getLoginName())
-                .setCreateTime(user.getCreateTime())
-                .setUpdateTime(user.getUpdateTime());
+                .setLogin_name(user.getLogin_name())
+                .setCreate_time(user.getCreate_time())
+                .setUpdate_time(user.getUpdate_time());
     }
 
     public Long getExpireTime() {

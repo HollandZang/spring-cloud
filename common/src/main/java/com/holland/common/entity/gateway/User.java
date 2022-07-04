@@ -1,5 +1,7 @@
 package com.holland.common.entity.gateway;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,17 +18,19 @@ import java.util.List;
  * @TableName user
  */
 public class User implements UserDetails {
-    private LocalDateTime loginTime = LocalDateTime.now();
+    @TableField(exist = false)
+    private final LocalDateTime loginTime = LocalDateTime.now();
 
     /**
      *
      */
+    @TableId
     private Integer id;
 
     /**
      *
      */
-    private String loginName;
+    private String login_name;
 
     /**
      *
@@ -36,12 +40,12 @@ public class User implements UserDetails {
     /**
      *
      */
-    private Date createTime;
+    private Date create_time;
 
     /**
      *
      */
-    private Date updateTime;
+    private Date update_time;
 
     private static final long serialVersionUID = 1L;
 
@@ -54,12 +58,12 @@ public class User implements UserDetails {
         return this;
     }
 
-    public String getLoginName() {
-        return loginName;
+    public String getLogin_name() {
+        return login_name;
     }
 
-    public User setLoginName(String loginName) {
-        this.loginName = loginName;
+    public User setLogin_name(String login_name) {
+        this.login_name = login_name;
         return this;
     }
 
@@ -77,7 +81,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return loginName;
+        return login_name;
     }
 
     @Override
@@ -105,21 +109,21 @@ public class User implements UserDetails {
         return this;
     }
 
-    public Date getCreateTime() {
-        return createTime;
+    public Date getCreate_time() {
+        return create_time;
     }
 
-    public User setCreateTime(Date createTime) {
-        this.createTime = createTime;
+    public User setCreate_time(Date create_time) {
+        this.create_time = create_time;
         return this;
     }
 
-    public Date getUpdateTime() {
-        return updateTime;
+    public Date getUpdate_time() {
+        return update_time;
     }
 
-    public User setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
+    public User setUpdate_time(Date update_time) {
+        this.update_time = update_time;
         return this;
     }
 
