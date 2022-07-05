@@ -1,93 +1,53 @@
 package com.holland.common.entity.gateway;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * 操作日志表
- * @TableName log_login
- */
 public class LogLogin implements Serializable {
-    /**
-     * 
-     */
-    @TableId
-    private Integer id;
-
-    /**
-     * 操作人
-     */
-    private String operate_user;
-
-    /**
-     * 操作时间
-     */
-    private Date operate_time;
-
-    /**
-     * 操作类型 1: 登录  0: 登出
-     */
-    private String operate_type;
-
-    /**
-     * 指明通过什么软件、项目登录
-     */
-    @TableField("'from'")
+    private String loginName;
+    private String pwd;
+    private Date actionTime;
+    private String actionType;
     private String from;
-
-    /**
-     * ip来源
-     */
     private String ip;
-
-    /**
-     * 
-     */
-    private Integer result;
-
-    /**
-     * 
-     */
-    private String response;
+    private Integer resCode;
+    private String resBody;
 
     private static final long serialVersionUID = 1L;
 
-    public Integer getId() {
-        return id;
+    public String getPwd() {
+        return pwd;
     }
 
-    public LogLogin setId(Integer id) {
-        this.id = id;
+    public LogLogin setPwd(String pwd) {
+        this.pwd = pwd;
         return this;
     }
 
-    public String getOperate_user() {
-        return operate_user;
+    public String getLoginName() {
+        return loginName;
     }
 
-    public LogLogin setOperate_user(String operate_user) {
-        this.operate_user = operate_user;
+    public LogLogin setLoginName(String loginName) {
+        this.loginName = loginName;
         return this;
     }
 
-    public Date getOperate_time() {
-        return operate_time;
+    public Date getActionTime() {
+        return actionTime;
     }
 
-    public LogLogin setOperate_time(Date operate_time) {
-        this.operate_time = operate_time;
+    public LogLogin setActionTime(Date actionTime) {
+        this.actionTime = actionTime;
         return this;
     }
 
-    public String getOperate_type() {
-        return operate_type;
+    public String getActionType() {
+        return actionType;
     }
 
-    public LogLogin setOperate_type(String operate_type) {
-        this.operate_type = operate_type;
+    public LogLogin setActionType(String actionType) {
+        this.actionType = actionType;
         return this;
     }
 
@@ -109,21 +69,21 @@ public class LogLogin implements Serializable {
         return this;
     }
 
-    public Integer getResult() {
-        return result;
+    public Integer getResCode() {
+        return resCode;
     }
 
-    public LogLogin setResult(Integer result) {
-        this.result = result;
+    public LogLogin setResCode(Integer resCode) {
+        this.resCode = resCode;
         return this;
     }
 
-    public String getResponse() {
-        return response;
+    public String getResBody() {
+        return resBody;
     }
 
-    public LogLogin setResponse(String response) {
-        this.response = response;
+    public LogLogin setResBody(String resBody) {
+        this.resBody = resBody;
         return this;
     }
 

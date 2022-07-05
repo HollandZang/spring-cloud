@@ -8,8 +8,11 @@ public class RequestUtil {
         return request.getHeaders().getFirst("HAuth");
     }
 
+    public static void setLoginName(ServerHttpRequest request, String loginName) {
+        request.getHeaders().add("_loginName", loginName);
+    }
+
     public static String getLoginName(ServerHttpRequest request) {
-        final String token = getToken(request);
-        return token == null ? null : token.substring(0, token.length() - 10);
+        return request.getHeaders().getFirst("_loginName");
     }
 }

@@ -3,64 +3,25 @@ package com.holland.common.entity.gateway;
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * 操作日志表
- * @TableName log
- */
 public class Log implements Serializable {
-    /**
-     * 
-     */
-    private Integer id;
-
-    /**
-     * 操作人
-     */
     private String operateUser;
-
-    /**
-     * 操作时间
-     */
     private Date operateTime;
-
-    /**
-     * 操作类型 CRUD
-     */
-    private String operateType;
-
-    /**
-     * 操作api
-     */
-    private String operateApi;
-
-    /**
-     * ip来源
-     */
+    private String reqLine;
     private String ip;
-
-    /**
-     * 
-     */
     private String param;
+    private String body;
 
-    /**
-     * 
-     */
-    private Integer result;
-
-    /**
-     * 
-     */
-    private String response;
+    private Integer resCode;
+    private String resData;
 
     private static final long serialVersionUID = 1L;
 
-    public Integer getId() {
-        return id;
+    public String getBody() {
+        return body;
     }
 
-    public Log setId(Integer id) {
-        this.id = id;
+    public Log setBody(String body) {
+        this.body = body;
         return this;
     }
 
@@ -82,21 +43,12 @@ public class Log implements Serializable {
         return this;
     }
 
-    public String getOperateType() {
-        return operateType;
+    public String getReqLine() {
+        return reqLine;
     }
 
-    public Log setOperateType(String operateType) {
-        this.operateType = operateType;
-        return this;
-    }
-
-    public String getOperateApi() {
-        return operateApi;
-    }
-
-    public Log setOperateApi(String operateApi) {
-        this.operateApi = operateApi;
+    public Log setReqLine(String reqLine) {
+        this.reqLine = reqLine;
         return this;
     }
 
@@ -118,21 +70,21 @@ public class Log implements Serializable {
         return this;
     }
 
-    public Integer getResult() {
-        return result;
+    public Integer getResCode() {
+        return resCode;
     }
 
-    public Log setResult(Integer result) {
-        this.result = result;
+    public Log setResCode(Integer resCode) {
+        this.resCode = resCode;
         return this;
     }
 
-    public String getResponse() {
-        return response;
+    public String getResData() {
+        return resData;
     }
 
-    public Log setResponse(String response) {
-        this.response = response;
+    public Log setResData(String resData) {
+        this.resData = resData;
         return this;
     }
 

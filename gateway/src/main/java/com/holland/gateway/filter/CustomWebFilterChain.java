@@ -2,6 +2,7 @@ package com.holland.gateway.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.holland.common.aggregate.CacheUser;
 import com.holland.common.entity.gateway.Log;
 import com.holland.common.entity.gateway.LogLogin;
 import com.holland.common.entity.gateway.User;
@@ -29,7 +30,6 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -108,11 +108,12 @@ public class CustomWebFilterChain {
                     return originalResponse.setComplete();
                 }
                 //token验证: token有效性
-                final Object auth = userCache.get(token);
-                if (auth == null) {
+                final CacheUser cacheUser = userCache.get(token);
+                if (cacheUser == null) {
                     originalResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
                     return originalResponse.setComplete();
                 }
+                RequestUtil.setLoginName(request, cacheUser.getLogin_name());
             }
             return chain.filter(exchange);
         };
@@ -166,10 +167,10 @@ public class CustomWebFilterChain {
                                                     logLogin(request, originalResponse.getStatusCode(), respBody, requestBody);
                                                     break;
                                                 case "/user/logout":
-                                                    logLogout(request, originalResponse.getStatusCode(), respBody, requestBody);
+                                                    logLogout(request, originalResponse.getStatusCode(), respBody);
                                                     break;
                                                 default:
-                                                    log(request, originalResponse.getStatusCode(), respBody, exchange, requestBody);
+                                                    log(request, originalResponse.getStatusCode(), respBody, requestBody);
                                             }
                                         })
                         );
@@ -185,34 +186,28 @@ public class CustomWebFilterChain {
         };
     }
 
-    private void log(ServerHttpRequest request, HttpStatus statusCode, String respBody, ServerWebExchange exchange, String requestBody) {
+    private void log(ServerHttpRequest request, HttpStatus statusCode, String respBody, String requestBody) {
         final String loginName = RequestUtil.getLoginName(request);
-        final String type = request.getMethodValue();
-        final String api = request.getURI().getRawPath();
+        final String reqLine = request.getMethodValue() + " " + request.getURI().getRawPath();
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
         final int result = statusCode.value();
+        final String queryParam = JSONObject.toJSONString(request.getQueryParams().toSingleValueMap());
 
         final Log log = new Log()
                 .setOperateUser(loginName)
                 .setOperateTime(new Date())
-                .setOperateType(type)
-                .setOperateApi(api)
+                .setReqLine(reqLine)
+                .setBody(requestBody)
+                .setParam(queryParam)
                 .setIp(ip)
-                .setResult(result)
-                .setResponse(respBody);
+                .setResCode(result)
+                .setResData(respBody);
 
-        exchange.getSession().subscribe(session -> {
-//            final String bodyParam = CachedRequestBodyObject.getOrDefault(session, requestBody);
-            final String bodyParam = requestBody;
-            final String queryParam = JSONObject.toJSONString(request.getQueryParams().toSingleValueMap());
-            final String param = queryParam + (bodyParam == null ? "" : bodyParam);
-
-            try {
-                kafkaProducer.exec("op_log", JSON.toJSONString(log.setParam(param)));
-            } catch (Exception e) {
-                logger.error("log->'log'", e);
-            }
-        });
+        try {
+            kafkaProducer.exec("op_log", JSON.toJSONString(log));
+        } catch (Exception e) {
+            logger.error("log->'log'", e);
+        }
     }
 
     private void logLogin(ServerHttpRequest request, HttpStatus statusCode, String respBody, String requestBody) {
@@ -222,34 +217,37 @@ public class CustomWebFilterChain {
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
         final int result = statusCode.value();
 
+        final LogLogin logLogin = new LogLogin()
+                .setLoginName(loginName)
+                .setPwd("")
+                .setActionTime(new Date())
+                .setActionType("1")
+                .setFrom(from)
+                .setIp(ip)
+                .setResCode(result)
+                .setResBody(respBody);
+
         try {
-            final LogLogin logLogin = new LogLogin()
-                    .setOperate_user(loginName)
-                    .setOperate_time(new Date())
-                    .setOperate_type("1")
-                    .setFrom(from)
-                    .setIp(ip)
-                    .setResult(result)
-                    .setResponse(respBody);
             kafkaProducer.exec("login_log", JSON.toJSONString(logLogin));
         } catch (Exception e) {
             logger.error("log->'logLogin'", e);
         }
     }
 
-    private void logLogout(ServerHttpRequest request, HttpStatus statusCode, String respBody, String requestBody) {
+    private void logLogout(ServerHttpRequest request, HttpStatus statusCode, String respBody) {
         final String loginName = RequestUtil.getLoginName(request);
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
         final int result = statusCode.value();
 
+        final LogLogin logLogin = new LogLogin()
+                .setLoginName(loginName)
+                .setActionTime(new Date())
+                .setActionType("0")
+                .setIp(ip)
+                .setResCode(result)
+                .setResBody(respBody);
+
         try {
-            final LogLogin logLogin = new LogLogin()
-                    .setOperate_user(loginName)
-                    .setOperate_time(new Date())
-                    .setOperate_type("0")
-                    .setIp(ip)
-                    .setResult(result)
-                    .setResponse(respBody);
             kafkaProducer.exec("login_log", JSON.toJSONString(logLogin));
         } catch (Exception e) {
             logger.error("log->'logLogout'", e);
