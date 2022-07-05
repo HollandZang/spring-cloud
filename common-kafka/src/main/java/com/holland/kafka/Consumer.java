@@ -3,6 +3,8 @@ package com.holland.kafka;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -11,15 +13,26 @@ import java.util.Properties;
 
 public class Consumer {
 
-    public static void main(String[] args) {
-        new Consumer().exec();
+    public static void main(String[] args) throws InterruptedException {
+        final List<String> list = Collections.singletonList("quickstart-events");
+        final Consumer c = new Consumer("localhost:9092", "g-3", list);
+        c.runOnThread(record -> System.out.printf("topic=%s, offset=%s, value=%s", record.topic(), record.offset(), record.value()));
+        Thread.sleep(10000);
+        System.exit(0);
     }
 
-    protected String bootstrapServers = "localhost:9092";
-    protected String groupId = "group-4";
-    protected List<String> topics = Collections.singletonList("quickstart-events");
+    protected final Logger logger = LoggerFactory.getLogger(Consumer.class);
 
-    public void exec() {
+    protected final String bootstrapServers;
+    protected final String groupId;
+    protected final KafkaConsumer<String, String> consumer;
+    protected List<String> topics;
+
+    public Consumer(String bootstrapServers, String groupId, List<String> topics) {
+        this.bootstrapServers = bootstrapServers;
+        this.groupId = groupId;
+        this.topics = topics;
+
         Properties properties = new Properties();
         //主机信息
         properties.put("bootstrap.servers", bootstrapServers);
@@ -49,27 +62,29 @@ public class Consumer {
         properties.put("session.timeout.ms", "30000");
         properties.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         properties.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        this.consumer = new KafkaConsumer<>(properties);
+    }
 
-        try (KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(properties)) {
+    public void runOnThread(java.util.function.Consumer<ConsumerRecord<String, String>> action) {
+        new Thread(() -> {
             /**
-             * 订阅主题，这个地方只传了一个主题：quickstart-events.
              * 这个地方也可以有正则表达式。
              */
-            kafkaConsumer.subscribe(topics);
+            consumer.subscribe(topics);
             //无限循环轮询
-//            while (true) {
-            /**
-             * 消费者必须持续对Kafka进行轮询，否则会被认为已经死亡，他的分区会被移交给群组里的其他消费者。
-             * poll返回一个记录列表，每个记录包含了记录所属主题的信息，
-             * 记录所在分区的信息，记录在分区里的偏移量，以及键值对。
-             * poll需要一个指定的超时参数，指定了方法在多久后可以返回。
-             * 发送心跳的频率，告诉群组协调器自己还活着。
-             */
-            ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(100));
-            for (ConsumerRecord<String, String> record : records) {
-                System.err.printf("offset = %d, value = %s\n", record.offset(), record.value());
+            while (true) {
+                /**
+                 * 消费者必须持续对Kafka进行轮询，否则会被认为已经死亡，他的分区会被移交给群组里的其他消费者。
+                 * poll返回一个记录列表，每个记录包含了记录所属主题的信息，
+                 * 记录所在分区的信息，记录在分区里的偏移量，以及键值对。
+                 * poll需要一个指定的超时参数，指定了方法在多久后可以返回。
+                 * 发送心跳的频率，告诉群组协调器自己还活着。
+                 */
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+                for (ConsumerRecord<String, String> record : records) {
+                    action.accept(record);
+                }
             }
-//            }
-        }
+        }, "kafka-consumer").start();
     }
 }

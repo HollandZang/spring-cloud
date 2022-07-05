@@ -1,15 +1,15 @@
 package com.holland.gateway.filter;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.holland.common.entity.gateway.Log;
 import com.holland.common.entity.gateway.LogLogin;
 import com.holland.common.entity.gateway.User;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.common.UserCache;
-import com.holland.gateway.mapper.LogLoginMapper;
-import com.holland.gateway.mapper.LogMapper;
 import com.holland.gateway.swagger.SwaggerRouteFilter;
 import com.holland.gateway.swagger.SwaggerUtils;
+import com.holland.kafka.Producer;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -49,10 +49,7 @@ public class CustomWebFilterChain {
     private SwaggerUtils swaggerUtils;
 
     @Resource
-    private LogMapper logMapper;
-
-    @Resource
-    private LogLoginMapper logLoginMapper;
+    private Producer kafkaProducer;
 
     private final Logger logger = LoggerFactory.getLogger(CustomWebFilterChain.class);
 
@@ -204,13 +201,6 @@ public class CustomWebFilterChain {
                 .setResult(result)
                 .setResponse(respBody);
 
-        if ("DELETE".equals(type)) {
-            final int index = api.lastIndexOf("/");
-            logMapper.insertSelective(
-                    log.setOperateApi(api.substring(0, index)).setParam(api.substring(index + 1))
-            );
-        }
-
         exchange.getSession().subscribe(session -> {
 //            final String bodyParam = CachedRequestBodyObject.getOrDefault(session, requestBody);
             final String bodyParam = requestBody;
@@ -218,7 +208,7 @@ public class CustomWebFilterChain {
             final String param = queryParam + (bodyParam == null ? "" : bodyParam);
 
             try {
-                logMapper.insertSelective(log.setParam(param).setResponse(respBody));
+                kafkaProducer.exec("op_log", JSON.toJSONString(log.setParam(param)));
             } catch (Exception e) {
                 logger.error("log->'log'", e);
             }
@@ -233,14 +223,15 @@ public class CustomWebFilterChain {
         final int result = statusCode.value();
 
         try {
-            logLoginMapper.insertSelective(new LogLogin()
+            final LogLogin logLogin = new LogLogin()
                     .setOperate_user(loginName)
                     .setOperate_time(new Date())
                     .setOperate_type("1")
                     .setFrom(from)
                     .setIp(ip)
                     .setResult(result)
-                    .setResponse(respBody));
+                    .setResponse(respBody);
+            kafkaProducer.exec("login_log", JSON.toJSONString(logLogin));
         } catch (Exception e) {
             logger.error("log->'logLogin'", e);
         }
@@ -252,13 +243,14 @@ public class CustomWebFilterChain {
         final int result = statusCode.value();
 
         try {
-            logLoginMapper.insertSelective(new LogLogin()
+            final LogLogin logLogin = new LogLogin()
                     .setOperate_user(loginName)
                     .setOperate_time(new Date())
                     .setOperate_type("0")
                     .setIp(ip)
                     .setResult(result)
-                    .setResponse(respBody));
+                    .setResponse(respBody);
+            kafkaProducer.exec("login_log", JSON.toJSONString(logLogin));
         } catch (Exception e) {
             logger.error("log->'logLogout'", e);
         }

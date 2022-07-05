@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.holland.common.aggregate.CacheUser;
 import com.holland.common.entity.gateway.User;
 import com.holland.common.utils.Validator;
+import com.holland.redis.Redis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-public class UserCache extends RedisCache {
+public class UserCache extends Redis {
     private final Logger logger = LoggerFactory.getLogger(UserCache.class);
 
     /* MINUTES */
@@ -24,39 +25,47 @@ public class UserCache extends RedisCache {
     @Value("${spring.redis.user-key-prefix:login_name_to_token:}")
     private String userKeyPrefix;
 
+    public UserCache(@Value("${spring.redis.host}") String host
+            , @Value("${spring.redis.port}") int port) {
+        super(host, port);
+    }
+
     public String cache(User user) {
         final String token = UUID.randomUUID().toString();
         final CacheUser cacheUser = CacheUser.from(user)
                 .setToken(token)
                 .setExpireTime(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(tokenTimeout));
-        redisTemplate.opsForValue().set(tokenKeyPrefix + token, JSON.toJSONString(cacheUser), tokenTimeout, TimeUnit.MINUTES);
-        redisTemplate.opsForValue().set(userKeyPrefix + user.getLogin_name(), token, tokenTimeout, TimeUnit.MINUTES);
+
+        final int seconds = (int) TimeUnit.MINUTES.toSeconds(tokenTimeout);
+        exec(0, jedis -> jedis.setex(tokenKeyPrefix + token, seconds, JSON.toJSONString(cacheUser)));
+        exec(1, jedis -> jedis.setex(userKeyPrefix + user.getLogin_name(), seconds, token));
         return token;
     }
 
     public CacheUser get(String token) {
-        return JSON.parseObject((String) redisTemplate.opsForValue().get(token), CacheUser.class);
+        final String userStr = exec(0, jedis -> jedis.get(token));
+        return JSON.parseObject(userStr, CacheUser.class);
     }
 
     public String getTokenByLoginName(String loginName) {
-        return (String) redisTemplate.opsForValue().get(userKeyPrefix + loginName);
+        return exec(1, jedis -> jedis.get(loginName));
     }
 
     public Boolean del(String token) {
         final CacheUser cacheUser = get(token);
         if (cacheUser != null) {
-            redisTemplate.delete(userKeyPrefix + cacheUser.getLogin_name());
+            exec(1, jedis -> jedis.del(userKeyPrefix + cacheUser.getLogin_name()));
         }
-        redisTemplate.delete(tokenKeyPrefix + token);
+        exec(0, jedis -> jedis.del(tokenKeyPrefix + token));
         return true;
     }
 
     public Boolean delByLoginName(String loginName) {
         final String token = getTokenByLoginName(loginName);
         if (token != null) {
-            redisTemplate.delete(tokenKeyPrefix + token);
+            exec(0, jedis -> jedis.del(tokenKeyPrefix + token));
         }
-        redisTemplate.delete(userKeyPrefix + loginName);
+        exec(1, jedis -> jedis.del(userKeyPrefix + loginName));
         return true;
     }
 

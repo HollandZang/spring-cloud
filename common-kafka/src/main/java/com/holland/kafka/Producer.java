@@ -1,21 +1,32 @@
 package com.holland.kafka;
 
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
 public class Producer {
 
     public static void main(String[] args) {
-        new Producer().exec("quickstart-events", null, null, null, "test", null);
+        new Producer("localhost:9092", "group-4")
+                .exec("quickstart-events", null, null, null, "test1", null, (metadata, exception) -> {
+                });
     }
 
-    protected String bootstrapServers = "localhost:9092";
-    protected String groupId = "group-4";
+    protected final Logger logger = LoggerFactory.getLogger(Producer.class);
 
-    public void exec(String topic, Integer partition, Long timestamp, String key, String value, Iterable<Header> headers) {
+    protected final String bootstrapServers;
+    protected final String groupId;
+    protected final KafkaProducer<Object, Object> producer;
+
+    public Producer(String bootstrapServers, String groupId) {
+        this.bootstrapServers = bootstrapServers;
+        this.groupId = groupId;
+
         Properties properties = new Properties();
         //主机信息
         properties.put("bootstrap.servers", bootstrapServers);
@@ -43,17 +54,29 @@ public class Producer {
          * 协调器就会触发再均衡，把它的分区分配给其他消费者。
          */
         properties.put("session.timeout.ms", "30000");
-        properties.put("key.serializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        properties.put("value.serializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
-        try (final KafkaProducer<Object, Object> producer = new KafkaProducer<>(properties)) {
-            producer.send(new ProducerRecord<>(topic, partition, timestamp, key, value, headers), (metadata, exception) -> {
-                if (exception != null) {
-                    exception.printStackTrace();
-                } else {
-                    System.out.println(metadata);
+        this.producer = new KafkaProducer<>(properties);
+    }
+
+    public void exec(String topic, String value) {
+        producer.send(new ProducerRecord<>(topic, value), (metadata, exception) -> {
+            if (exception != null) {
+                logger.error("topis=" + topic + ", value=" + value, exception);
+            } else {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("topic={}, value={}", topic, value);
                 }
-            });
-        }
+            }
+        });
+    }
+
+    public void exec(String topic, String value, Callback callback) {
+        producer.send(new ProducerRecord<>(topic, value), callback);
+    }
+
+    public void exec(String topic, Integer partition, Long timestamp, String key, String value, Iterable<Header> headers, Callback callback) {
+        producer.send(new ProducerRecord<>(topic, partition, timestamp, key, value, headers), callback);
     }
 }

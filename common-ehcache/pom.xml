@@ -6,8 +6,8 @@
 
     <groupId>com.holland</groupId>
     <version>1.0</version>
-    <artifactId>common-kafka</artifactId>
-    <name>common-kafka</name>
+    <artifactId>common-ehcache</artifactId>
+    <name>common-ehcache</name>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -16,20 +16,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-streams</artifactId>
-            <version>3.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>3.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.36</version>
-            <scope>compile</scope>
+            <groupId>org.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+            <version>3.10.0</version>
         </dependency>
     </dependencies>
 </project>

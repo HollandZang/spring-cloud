@@ -6,6 +6,7 @@ logging:
   level:
     com.holland.gateway.filter.CustomWebFilterChain: debug
     com.holland.gateway.mapper: debug
+    com.holland.kafka.Producer: debug
 spring:
   redis:
     host: localhost
@@ -22,3 +23,6 @@ spring:
     url: jdbc:mysql://localhost:3306/spring-cloud_gateway?useUnicode=true&characterEncoding=utf8&useSSL=false&autoReconnect=true&serverTimezone=Asia/Shanghai
     username: root
     password: root
+kafka:
+  server: localhost:9092
+  groupId: ${spring.application.name}
