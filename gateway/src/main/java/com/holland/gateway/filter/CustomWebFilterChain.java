@@ -218,9 +218,7 @@ public class CustomWebFilterChain {
             final String param = queryParam + (bodyParam == null ? "" : bodyParam);
 
             try {
-                logMapper.insertSelective(
-                        log.setParam(truncByte(param, 1024))
-                                .setResponse(truncByte(respBody, 1024)));
+                logMapper.insertSelective(log.setParam(param).setResponse(respBody));
             } catch (Exception e) {
                 logger.error("log->'log'", e);
             }

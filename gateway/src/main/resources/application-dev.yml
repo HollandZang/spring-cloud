@@ -12,7 +12,8 @@ spring:
     port: 6379
     # MINUTES
     token-timeout: 60
-    token-key-prefix: "holland:"
+    token-key-prefix: "token_to_user:"
+    user-key-prefix: "login_name_to_token:"
   cache:
     redis:
       use-key-prefix: false

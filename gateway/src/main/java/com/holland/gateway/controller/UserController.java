@@ -57,7 +57,7 @@ public class UserController implements IUserController {
 
                 final LoginUser vo = LoginUser.from(dbUser);
                 vo.setPassword(null);
-                vo.setToken(userCache.cache(loginName, user));
+                vo.setToken(userCache.cache(user));
                 return Mono.just(Response.success(vo));
             } else {
                 return Mono.just(Response.failed("账号或密码错误"));

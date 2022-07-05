@@ -19,16 +19,18 @@ public class UserCache extends RedisCache {
     /* MINUTES */
     @Value("${spring.redis.token-timeout:60}")
     private long tokenTimeout;
-    @Value("${spring.redis.token-key-prefix:holland:}")
+    @Value("${spring.redis.token-key-prefix:token_to_user:}")
     private String tokenKeyPrefix;
+    @Value("${spring.redis.user-key-prefix:login_name_to_token:}")
+    private String userKeyPrefix;
 
-    public String cache(String loginName, User user) {
-        final String pre = getPre(loginName);
-        final String token = pre + UUID.randomUUID().toString().substring(9).replace("-", "");
+    public String cache(User user) {
+        final String token = UUID.randomUUID().toString();
         final CacheUser cacheUser = CacheUser.from(user)
                 .setToken(token)
                 .setExpireTime(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(tokenTimeout));
         redisTemplate.opsForValue().set(tokenKeyPrefix + token, JSON.toJSONString(cacheUser), tokenTimeout, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(userKeyPrefix + user.getLogin_name(), token, tokenTimeout, TimeUnit.MINUTES);
         return token;
     }
 
@@ -36,25 +38,26 @@ public class UserCache extends RedisCache {
         return JSON.parseObject((String) redisTemplate.opsForValue().get(token), CacheUser.class);
     }
 
-    public CacheUser getByLoginName(String loginName) {
-        for (String token : redisTemplate.keys(tokenKeyPrefix + getPre(loginName) + "*")) {
-            final CacheUser cacheUser = JSON.parseObject((String) redisTemplate.opsForValue().get(token), CacheUser.class);
-            if (loginName.equals(cacheUser.getLogin_name())) {
-                return cacheUser;
-            }
-        }
-        return null;
+    public String getTokenByLoginName(String loginName) {
+        return (String) redisTemplate.opsForValue().get(userKeyPrefix + loginName);
     }
 
     public Boolean del(String token) {
-        return redisTemplate.delete(tokenKeyPrefix + token);
+        final CacheUser cacheUser = get(token);
+        if (cacheUser != null) {
+            redisTemplate.delete(userKeyPrefix + cacheUser.getLogin_name());
+        }
+        redisTemplate.delete(tokenKeyPrefix + token);
+        return true;
     }
 
     public Boolean delByLoginName(String loginName) {
-        final CacheUser cacheUser = getByLoginName(loginName);
-        if (cacheUser == null)
-            return true;
-        return redisTemplate.delete(tokenKeyPrefix + cacheUser.getToken());
+        final String token = getTokenByLoginName(loginName);
+        if (token != null) {
+            redisTemplate.delete(tokenKeyPrefix + token);
+        }
+        redisTemplate.delete(userKeyPrefix + loginName);
+        return true;
     }
 
     private String cut(String loginName) {

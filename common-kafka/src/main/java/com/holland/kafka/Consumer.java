@@ -57,19 +57,19 @@ public class Consumer {
              */
             kafkaConsumer.subscribe(topics);
             //无限循环轮询
-            while (true) {
-                /**
-                 * 消费者必须持续对Kafka进行轮询，否则会被认为已经死亡，他的分区会被移交给群组里的其他消费者。
-                 * poll返回一个记录列表，每个记录包含了记录所属主题的信息，
-                 * 记录所在分区的信息，记录在分区里的偏移量，以及键值对。
-                 * poll需要一个指定的超时参数，指定了方法在多久后可以返回。
-                 * 发送心跳的频率，告诉群组协调器自己还活着。
-                 */
-                ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(100));
-                for (ConsumerRecord<String, String> record : records) {
-                    System.err.printf("offset = %d, value = %s\n", record.offset(), record.value());
-                }
+//            while (true) {
+            /**
+             * 消费者必须持续对Kafka进行轮询，否则会被认为已经死亡，他的分区会被移交给群组里的其他消费者。
+             * poll返回一个记录列表，每个记录包含了记录所属主题的信息，
+             * 记录所在分区的信息，记录在分区里的偏移量，以及键值对。
+             * poll需要一个指定的超时参数，指定了方法在多久后可以返回。
+             * 发送心跳的频率，告诉群组协调器自己还活着。
+             */
+            ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(100));
+            for (ConsumerRecord<String, String> record : records) {
+                System.err.printf("offset = %d, value = %s\n", record.offset(), record.value());
             }
+//            }
         }
     }
 }

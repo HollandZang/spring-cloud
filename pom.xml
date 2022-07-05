@@ -6,8 +6,6 @@
     <modules>
         <module>admin</module>
         <module>common</module>
-        <module>common-hadoop</module>
-        <module>common-kafka</module>
         <module>email</module>
         <module>eureka</module>
         <module>file-system</module>

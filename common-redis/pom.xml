@@ -6,21 +6,19 @@
 
     <groupId>com.holland</groupId>
     <version>1.0</version>
-    <artifactId>common-hadoop</artifactId>
-    <name>common-hadoop</name>
+    <artifactId>common-redis</artifactId>
+    <name>common-redis</name>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-            <version>3.2.2</version>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>4.2.3</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-hdfs</artifactId>
-            <version>3.2.2</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 </project>
