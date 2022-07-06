@@ -113,7 +113,7 @@ public class CustomWebFilterChain {
                     originalResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
                     return originalResponse.setComplete();
                 }
-                RequestUtil.setLoginName(request, cacheUser.getLogin_name());
+                RequestUtil.setLoginName(request, cacheUser);
             }
             return chain.filter(exchange);
         };
@@ -187,7 +187,7 @@ public class CustomWebFilterChain {
     }
 
     private void log(ServerHttpRequest request, HttpStatus statusCode, String respBody, String requestBody) {
-        final String loginName = RequestUtil.getLoginName(request);
+        final String loginName = RequestUtil.getCacheUser(request).getLogin_name();
         final String reqLine = request.getMethodValue() + " " + request.getURI().getRawPath();
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
         final int result = statusCode.value();
@@ -235,7 +235,7 @@ public class CustomWebFilterChain {
     }
 
     private void logLogout(ServerHttpRequest request, HttpStatus statusCode, String respBody) {
-        final String loginName = RequestUtil.getLoginName(request);
+        final String loginName = RequestUtil.getCacheUser(request).getLogin_name();
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
         final int result = statusCode.value();
 

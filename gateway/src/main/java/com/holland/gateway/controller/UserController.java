@@ -9,6 +9,7 @@ import com.holland.common.utils.Validator;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.common.UserCache;
 import com.holland.gateway.mapper.UserMapper;
+import com.holland.redis.Lock;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -35,6 +36,9 @@ public class UserController implements IUserController {
     @Override
     public Mono<Response<List<User>>> list(Page<User> page) {
         final Page<User> userPage = userMapper.selectPage(page, null);
+        for (User user : userPage.getRecords()) {
+            user.setPassword(null);
+        }
         return Mono.defer(() -> Mono.just(Response.success(userPage)));
     }
 
@@ -46,21 +50,25 @@ public class UserController implements IUserController {
         Validator.test(user.getPassword(), "密码").notEmpty().maxLength(16);
 
         return Mono.defer(() -> {
-            final Optional<User> optional = userMapper.selectByLoginName(loginName);
-            if (optional.isEmpty()) {
+            try (Lock lock = userCache.lock("login", user.getLogin_name())) {
+                if (!lock.isLocked())
+                    return Mono.just(Response.failed("please later"));
+                final Optional<User> optional = userMapper.selectByLoginName(loginName);
+                if (optional.isEmpty()) {
 //                return Mono.just(Response.failed("用户不存在"));
-                return Mono.just(Response.failed("账号或密码错误"));
-            }
-            final User dbUser = optional.get();
-            if (encoder.matches(password, dbUser.getPassword())) {
-                userCache.delByLoginName(dbUser.getLogin_name());
+                    return Mono.just(Response.failed("账号或密码错误"));
+                }
+                final User dbUser = optional.get();
+                if (encoder.matches(password, dbUser.getPassword())) {
+                    userCache.delByLoginName(dbUser.getLogin_name());
 
-                final LoginUser vo = LoginUser.from(dbUser);
-                vo.setPassword(null);
-                vo.setToken(userCache.cache(user));
-                return Mono.just(Response.success(vo));
-            } else {
-                return Mono.just(Response.failed("账号或密码错误"));
+                    final LoginUser vo = LoginUser.from(dbUser);
+                    vo.setPassword(null);
+                    vo.setToken(userCache.cache(user));
+                    return Mono.just(Response.success(vo));
+                } else {
+                    return Mono.just(Response.failed("账号或密码错误"));
+                }
             }
         });
     }
@@ -101,12 +109,11 @@ public class UserController implements IUserController {
     public Mono<Response<Integer>> update(ServerHttpRequest request, @RequestBody User user) {
         Validator.test(user.getPassword(), "密码").maxLength(16);
 
-        user.setLogin_name(RequestUtil.getLoginName(request));
+        user.setLogin_name(RequestUtil.getCacheUser(request).getLogin_name());
         final Optional<User> optional = userMapper.selectByLoginName(user.getLogin_name());
         if (optional.isEmpty()) {
             return Mono.defer(() -> Mono.just(Response.failed("资源不存在")));
         }
-        // TODO: 2022/2/7 旧密码匹配尝试
 
         if (StringUtils.hasText(user.getPassword())) {
             user.setPassword(encoder.encode(user.getPassword()));

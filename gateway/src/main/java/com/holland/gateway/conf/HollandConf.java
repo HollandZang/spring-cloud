@@ -4,24 +4,28 @@ import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.holland.common.spring.configuration.GlobalExceptionHandle;
+import com.holland.gateway.common.RequestUtil;
+import com.holland.gateway.common.UserCache;
 import com.holland.kafka.Producer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
 @Import(GlobalExceptionHandle.class)
 @Configuration
 public class HollandConf {
-//    @PostConstruct
-//    public void init() {
-//
-//        final JDBCConnectionPool pool = new JDBCConnectionPool(DataSource.MYSQL, "localhost", "3306", "root", "root", "holland");
-//
-//        DbConf.INSTANCE.getM().put("holland", pool);
-//
-//        Generator.Companion.doGenerate(TestClass.class);
-//    }
+
+    @Resource
+    private UserCache userCache;
+
+    @PostConstruct
+    public void init() {
+        RequestUtil.init(userCache);
+    }
 
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {

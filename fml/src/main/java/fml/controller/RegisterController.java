@@ -24,10 +24,12 @@ import java.util.Map;
 @RequestMapping("/class")
 public class RegisterController {
 
-    private final Map<String, Object> injectMap = new HashMap<>();
-    private final ClassLoader cl = new URLClassLoader(new URL[]{new File("." + File.separator).toURI().toURL()});
+    private final Map<String, Object> injectMap;
+    private final ClassLoader cl;
 
     public RegisterController() throws MalformedURLException {
+        this.injectMap = new HashMap<>();
+        this.cl = new URLClassLoader(new URL[]{new File("." + File.separator).toURI().toURL()});
     }
 
     @PostMapping("/register")
