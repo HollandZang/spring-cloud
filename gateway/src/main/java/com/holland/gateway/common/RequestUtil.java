@@ -25,7 +25,8 @@ public class RequestUtil {
         if (user != null) {
             return JSON.parseObject(user, CacheUser.class);
         } else {
-            return userCache.get(getToken(request));
+            final String token = getToken(request);
+            return token == null ? null : userCache.get(token);
         }
     }
 }

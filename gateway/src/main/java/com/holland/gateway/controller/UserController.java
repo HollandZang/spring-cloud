@@ -110,21 +110,26 @@ public class UserController implements IUserController {
         Validator.test(user.getPassword(), "密码").maxLength(16);
 
         user.setLogin_name(RequestUtil.getCacheUser(request).getLogin_name());
-        final Optional<User> optional = userMapper.selectByLoginName(user.getLogin_name());
-        if (optional.isEmpty()) {
-            return Mono.defer(() -> Mono.just(Response.failed("资源不存在")));
-        }
 
-        if (StringUtils.hasText(user.getPassword())) {
-            user.setPassword(encoder.encode(user.getPassword()));
-        }
+        try (Lock lock = userCache.lock("update", user.getLogin_name())) {
+            if (!lock.isLocked())
+                return Mono.just(Response.failed("please later"));
+            final Optional<User> optional = userMapper.selectByLoginName(user.getLogin_name());
+            if (optional.isEmpty()) {
+                return Mono.defer(() -> Mono.just(Response.failed("资源不存在")));
+            }
 
-        final int row = userMapper.updateByUserSelective(
-                user.setUpdate_time(new Date()));
-        if (row == 0) {
-            return Mono.defer(() -> Mono.just(Response.failed("资源不存在")));
+            if (StringUtils.hasText(user.getPassword())) {
+                user.setPassword(encoder.encode(user.getPassword()));
+            }
+
+            final int row = userMapper.updateByUserSelective(
+                    user.setUpdate_time(new Date()));
+            if (row == 0) {
+                return Mono.defer(() -> Mono.just(Response.failed("资源不存在")));
+            }
+            return Mono.defer(() -> Mono.just(Response.success(row)));
         }
-        return Mono.defer(() -> Mono.just(Response.success(row)));
     }
 
 }

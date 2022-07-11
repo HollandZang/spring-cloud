@@ -211,7 +211,6 @@ public class CustomWebFilterChain {
     }
 
     private void logLogin(ServerHttpRequest request, HttpStatus statusCode, String respBody, String requestBody) {
-        /*指明通过什么软件、项目登录*/
         final String from = request.getHeaders().getFirst("User-Agent");
         final String loginName = JSONObject.parseObject(requestBody, User.class).getLogin_name();
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
