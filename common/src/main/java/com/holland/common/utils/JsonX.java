@@ -4,37 +4,17 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-
-import static com.holland.common.utils.CommX.actions;
 
 public class JsonX {
     public static void main(String[] args) {
-        JsonX.expression("m'data[0]+i'data[0].uid-f'data[0].activeCid");
+        final JSON json = (JSON) JSON.parse("{a:1,data:[{uid:\"157580\",activeCid:\"69\",activeChannel:\"kuaikan\",activeGid:\"1000\",activeIP:\"2882823743\",channelUid:\"91627840_3\",status:\"0\"}]}");
 
         final JsonX jsonX = new JsonX(json);
         JSONObject l = jsonX.find("data[0]");
         System.out.println(l);
-    }
-
-    public static <T> T expression(String expression) {
-        final String[] split = expression.split(Arrays.toString(actions));
-        final List<Block> blocks = Arrays.stream(split)
-                .map(Block::new)
-                .collect(Collectors.toList());
-        final Map a = blocks.get(0).parseActions(json);
-        final Integer b = blocks.get(1).parseActions(json);
-        final Float c = blocks.get(2).parseActions(json);
-        System.out.println(a);
-        System.out.println(b);
-        System.out.println(c);
-        return null;
     }
 
     public final JSON resource;
@@ -161,5 +141,4 @@ public class JsonX {
         }
     }
 
-    static final JSON json = (JSON) JSON.parse("{a:1,data:[{uid:\"157580\",activeCid:\"69\",activeChannel:\"kuaikan\",activeGid:\"1000\",activeIP:\"2882823743\",channelUid:\"91627840_3\",status:\"0\"}]}");
 }
