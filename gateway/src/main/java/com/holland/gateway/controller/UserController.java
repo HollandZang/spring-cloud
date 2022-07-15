@@ -3,7 +3,6 @@ package com.holland.gateway.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.holland.common.aggregate.LoginUser;
 import com.holland.common.entity.gateway.User;
-import com.holland.common.spring.AuthCheck;
 import com.holland.common.spring.apis.gateway.IUserController;
 import com.holland.common.utils.Response;
 import com.holland.common.utils.Validator;
@@ -34,7 +33,6 @@ public class UserController implements IUserController {
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(8);
 
-    @AuthCheck(values = AuthCheck.AuthCheckEnum.ADMIN)
     @Override
     public Mono<Response<List<User>>> list(Page<User> page) {
         final Page<User> userPage = userMapper.selectPage(page, null);

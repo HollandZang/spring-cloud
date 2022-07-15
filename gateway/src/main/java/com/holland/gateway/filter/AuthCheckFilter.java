@@ -41,18 +41,20 @@ public class AuthCheckFilter {
             final String reqLine = request.getMethodValue() + " " + request.getURI().getRawPath();
             final AuthCheck authCheck = authCheckMapping.get(reqLine);
             if (authCheck != null) {
-                final StringBuilder builder = new StringBuilder("authCheck: ");
+                final StringBuilder builder = logger.isDebugEnabled() ? new StringBuilder("authCheck: ") : null;
                 final ServerHttpResponse originalResponse = exchange.getResponse();
 
                 for (Function<ServerHttpRequest, Function<StringBuilder, Function<AuthCheck, HttpStatus>>> function : checkHandler) {
                     final HttpStatus httpStatus = function.apply(request).apply(builder).apply(authCheck);
                     if (httpStatus != null) {
-                        logger.debug(builder.toString());
+                        if (logger.isDebugEnabled())
+                            logger.debug(builder.toString());
                         originalResponse.setStatusCode(httpStatus);
                         return originalResponse.setComplete();
                     }
                 }
-                logger.debug(builder.toString());
+                if (logger.isDebugEnabled())
+                    logger.debug(builder.toString());
             }
             return chain.filter(exchange);
         };
@@ -65,17 +67,20 @@ public class AuthCheckFilter {
             final String token = RequestUtil.getToken(request);
             //token验证: 需要token的接口没传token
             if (token == null) {
-                builder.append(", checkToken=ERR");
+                if (logger.isDebugEnabled())
+                    builder.append(", checkToken=ERR");
                 return HttpStatus.UNAUTHORIZED;
             }
             //token验证: token有效性
             final CacheUser cacheUser = userCache.get(token);
             if (cacheUser == null) {
-                builder.append(", checkToken=ERR");
+                if (logger.isDebugEnabled())
+                    builder.append(", checkToken=ERR");
                 return HttpStatus.UNAUTHORIZED;
             }
             RequestUtil.setCacheUser(request, cacheUser);
-            builder.append(", checkToken=OK");
+            if (logger.isDebugEnabled())
+                builder.append(", checkToken=OK");
         }
         return null;
     };
@@ -86,14 +91,17 @@ public class AuthCheckFilter {
         if (o.isPresent()) {
             final CacheUser cacheUser = RequestUtil.getCacheUser(request);
             if (cacheUser == null) {
-                builder.append(", checkAdmin=ERR");
+                if (logger.isDebugEnabled())
+                    builder.append(", checkToken=ERR");
                 return HttpStatus.UNAUTHORIZED;
             }
             if (!"admin".equals(cacheUser.getRole())) {
-                builder.append(", checkAdmin=ERR");
+                if (logger.isDebugEnabled())
+                    builder.append(", checkAdmin=ERR");
                 return HttpStatus.FORBIDDEN;
             }
-            builder.append(", checkAdmin=OK");
+            if (logger.isDebugEnabled())
+                builder.append(", checkAdmin=OK");
         }
         return null;
     };
