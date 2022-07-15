@@ -34,7 +34,8 @@ public class UserCache extends Redis {
         final String token = UUID.randomUUID().toString();
         final CacheUser cacheUser = CacheUser.from(user)
                 .setToken(token)
-                .setExpireTime(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(tokenTimeout));
+                .setExpireTime(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(tokenTimeout))
+                .setRole("admin");
 
         final int seconds = (int) TimeUnit.MINUTES.toSeconds(tokenTimeout);
         exec(0, jedis -> jedis.setex(tokenKeyPrefix + token, seconds, JSON.toJSONString(cacheUser)));

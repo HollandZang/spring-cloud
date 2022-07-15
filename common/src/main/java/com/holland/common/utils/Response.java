@@ -35,6 +35,10 @@ public class Response<T> {
         return new Response<>(200, "", data, count);
     }
 
+    public static <T> Response<T> later() {
+        return new Response<>(1, "please later", null, 0);
+    }
+
     public static <T> Response<T> failed(Throwable e) {
         return new Response<>(500, e.getClass().getName() + "::" + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()), null, 0);
     }

@@ -1,11 +1,14 @@
 package com.holland.common.entity.gateway;
 
+import com.holland.common.utils.DateUtil;
+
 import java.io.Serializable;
 import java.util.Date;
 
 public class Log implements Serializable {
     private String operateUser;
-    private Date operateTime;
+    private long timestamp;
+    private String date;
     private String reqLine;
     private String ip;
     private String param;
@@ -34,13 +37,19 @@ public class Log implements Serializable {
         return this;
     }
 
-    public Date getOperateTime() {
-        return operateTime;
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public Log setOperateTime(Date operateTime) {
-        this.operateTime = operateTime;
+    public Log setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+        final Date d = new Date(timestamp);
+        this.date = DateUtil.getDateStr(d);
         return this;
+    }
+
+    public String getDate() {
+        return date;
     }
 
     public String getReqLine() {

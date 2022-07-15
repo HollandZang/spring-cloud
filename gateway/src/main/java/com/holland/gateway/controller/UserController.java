@@ -3,6 +3,7 @@ package com.holland.gateway.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.holland.common.aggregate.LoginUser;
 import com.holland.common.entity.gateway.User;
+import com.holland.common.spring.AuthCheck;
 import com.holland.common.spring.apis.gateway.IUserController;
 import com.holland.common.utils.Response;
 import com.holland.common.utils.Validator;
@@ -33,6 +34,7 @@ public class UserController implements IUserController {
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(8);
 
+    @AuthCheck(values = AuthCheck.AuthCheckEnum.ADMIN)
     @Override
     public Mono<Response<List<User>>> list(Page<User> page) {
         final Page<User> userPage = userMapper.selectPage(page, null);
@@ -52,7 +54,7 @@ public class UserController implements IUserController {
         return Mono.defer(() -> {
             try (Lock lock = userCache.lock("login", user.getLogin_name())) {
                 if (!lock.isLocked())
-                    return Mono.just(Response.failed("please later"));
+                    return Mono.just(Response.later());
                 final Optional<User> optional = userMapper.selectByLoginName(loginName);
                 if (optional.isEmpty()) {
 //                return Mono.just(Response.failed("用户不存在"));
@@ -113,7 +115,7 @@ public class UserController implements IUserController {
 
         try (Lock lock = userCache.lock("update", user.getLogin_name())) {
             if (!lock.isLocked())
-                return Mono.just(Response.failed("please later"));
+                return Mono.just(Response.later());
             final Optional<User> optional = userMapper.selectByLoginName(user.getLogin_name());
             if (optional.isEmpty()) {
                 return Mono.defer(() -> Mono.just(Response.failed("资源不存在")));

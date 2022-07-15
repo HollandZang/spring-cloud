@@ -6,6 +6,8 @@ public class CacheUser extends User {
     private Long expireTime;
     private String token;
 
+    private String role;
+
     public static CacheUser from(User user) {
         return (CacheUser) new CacheUser()
                 .setId(user.getId())
@@ -29,6 +31,15 @@ public class CacheUser extends User {
 
     public CacheUser setToken(String token) {
         this.token = token;
+        return this;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public CacheUser setRole(String role) {
+        this.role = role;
         return this;
     }
 }

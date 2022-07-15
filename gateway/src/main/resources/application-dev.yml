@@ -1,15 +1,16 @@
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://root:root@localhost:8761/eureka/
+      defaultZone: http://root:root@localhost.vm:8761/eureka/
 logging:
   level:
     com.holland.gateway.filter.CustomWebFilterChain: debug
+    com.holland.gateway.filter.AuthCheckFilter: debug
     com.holland.gateway.mapper: debug
     com.holland.kafka.Producer: debug
 spring:
   redis:
-    host: localhost
+    host: localhost.vm
     port: 6379
     # MINUTES
     token-timeout: 60
@@ -20,9 +21,9 @@ spring:
       use-key-prefix: false
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/spring-cloud_gateway?useUnicode=true&characterEncoding=utf8&useSSL=false&autoReconnect=true&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost.vm:3306/spring-cloud_gateway?useUnicode=true&characterEncoding=utf8&useSSL=false&autoReconnect=true&serverTimezone=Asia/Shanghai
     username: root
     password: root
 kafka:
-  server: localhost:9092
+  server: localhost.vm:9092
   groupId: ${spring.application.name}

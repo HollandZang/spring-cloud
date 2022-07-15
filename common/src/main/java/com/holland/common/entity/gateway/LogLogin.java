@@ -1,12 +1,15 @@
 package com.holland.common.entity.gateway;
 
+import com.holland.common.utils.DateUtil;
+
 import java.io.Serializable;
 import java.util.Date;
 
 public class LogLogin implements Serializable {
     private String loginName;
     private String pwd;
-    private Date actionTime;
+    private long timestamp;
+    private String date;
     private String actionType;
     private String from;
     private String ip;
@@ -33,13 +36,19 @@ public class LogLogin implements Serializable {
         return this;
     }
 
-    public Date getActionTime() {
-        return actionTime;
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public LogLogin setActionTime(Date actionTime) {
-        this.actionTime = actionTime;
+    public LogLogin setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+        final Date d = new Date(timestamp);
+        this.date = DateUtil.getDateStr(d);
         return this;
+    }
+
+    public String getDate() {
+        return date;
     }
 
     public String getActionType() {

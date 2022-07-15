@@ -16,7 +16,7 @@ public class RequestUtil {
         return request.getHeaders().getFirst("HAuth");
     }
 
-    public static void setLoginName(ServerHttpRequest request, CacheUser cacheUser) {
+    public static void setCacheUser(ServerHttpRequest request, CacheUser cacheUser) {
         request.getHeaders().add("_user", JSON.toJSONString(cacheUser));
     }
 

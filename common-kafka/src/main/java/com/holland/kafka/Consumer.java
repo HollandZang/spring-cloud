@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -14,9 +15,12 @@ import java.util.Properties;
 public class Consumer {
 
     public static void main(String[] args) throws InterruptedException {
-        final List<String> list = Collections.singletonList("quickstart-events");
-        final Consumer c = new Consumer("localhost:9092", "g-3", list);
-        c.runOnThread(record -> System.out.printf("topic=%s, offset=%s, value=%s", record.topic(), record.offset(), record.value()));
+        final List<String> list = new ArrayList<>();
+        list.add("TEST_TOPIC");
+        list.add("login_log");
+        list.add("op_log");
+        final Consumer c = new Consumer("localhost.vm:9092", "g-3", list);
+        c.runOnThread(record -> System.out.printf("topic=%s, offset=%s, value=%s\n", record.topic(), record.offset(), record.value()));
         Thread.sleep(10000);
         System.exit(0);
     }

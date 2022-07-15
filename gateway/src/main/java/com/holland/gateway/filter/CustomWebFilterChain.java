@@ -6,11 +6,13 @@ import com.holland.common.aggregate.CacheUser;
 import com.holland.common.entity.gateway.Log;
 import com.holland.common.entity.gateway.LogLogin;
 import com.holland.common.entity.gateway.User;
+import com.holland.common.spring.AuthCheckMapping;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.common.UserCache;
 import com.holland.gateway.swagger.SwaggerRouteFilter;
 import com.holland.gateway.swagger.SwaggerUtils;
 import com.holland.kafka.Producer;
+import com.holland.kafka.Topic;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -36,7 +38,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
+import java.util.Map;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -51,14 +53,18 @@ public class CustomWebFilterChain {
     @Resource
     private Producer kafkaProducer;
 
+    @Resource
+    private AuthCheckMapping authCheckMapping;
+
     private final Logger logger = LoggerFactory.getLogger(CustomWebFilterChain.class);
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+        final AuthCheckFilter authCheckFilter = new AuthCheckFilter(authCheckMapping, userCache);
         http
                 .addFilterAt(SwaggerRouteFilter.getWebFilter(swaggerUtils), SecurityWebFiltersOrder.HTTP_HEADERS_WRITER)
-                .addFilterAt(corsFilter(), SecurityWebFiltersOrder.CORS)
-                .addFilterAt(tokenFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
+//                .addFilterAt(corsFilter(), SecurityWebFiltersOrder.CORS)
+                .addFilterAt(authCheckFilter.filter(), SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAt(logFilter(), SecurityWebFiltersOrder.LAST)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable);
         return http.build();
@@ -80,42 +86,6 @@ public class CustomWebFilterChain {
                 }
             };
             return chain.filter(exchange.mutate().response(decoratedResponse).build());
-        };
-    }
-
-    private WebFilter tokenFilter() {
-        return (exchange, chain) -> {
-            //判断生产环境，借用了一下swaggerUtils
-            if (swaggerUtils.enabledSwagger()) return chain.filter(exchange);
-
-            final ServerHttpRequest request = exchange.getRequest();
-
-            /* 精确的路径匹配模式 */
-            final String path = request.getURI().getRawPath();
-            final boolean notNeedToken = "/user/login".equals(path) || "/user/create".equals(path);
-
-            if (request.getHeaders().getFirst(SwaggerRouteFilter.HEADER_NAME) != null) {
-                return chain.filter(exchange);
-            }
-            //token验证
-            if (!notNeedToken) {
-                final ServerHttpResponse originalResponse = exchange.getResponse();
-
-                final String token = RequestUtil.getToken(request);
-                //token验证: 需要token的接口没传token
-                if (token == null) {
-                    originalResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
-                    return originalResponse.setComplete();
-                }
-                //token验证: token有效性
-                final CacheUser cacheUser = userCache.get(token);
-                if (cacheUser == null) {
-                    originalResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
-                    return originalResponse.setComplete();
-                }
-                RequestUtil.setLoginName(request, cacheUser);
-            }
-            return chain.filter(exchange);
         };
     }
 
@@ -187,15 +157,17 @@ public class CustomWebFilterChain {
     }
 
     private void log(ServerHttpRequest request, HttpStatus statusCode, String respBody, String requestBody) {
-        final String loginName = RequestUtil.getCacheUser(request).getLogin_name();
+        final CacheUser cacheUser = RequestUtil.getCacheUser(request);
+        final String loginName = cacheUser == null ? null : cacheUser.getLogin_name();
         final String reqLine = request.getMethodValue() + " " + request.getURI().getRawPath();
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
         final int result = statusCode.value();
-        final String queryParam = JSONObject.toJSONString(request.getQueryParams().toSingleValueMap());
+        final Map<String, String> m = request.getQueryParams().toSingleValueMap();
+        final String queryParam = m.isEmpty() ? null : JSONObject.toJSONString(m);
 
         final Log log = new Log()
                 .setOperateUser(loginName)
-                .setOperateTime(new Date())
+                .setTimestamp(System.currentTimeMillis())
                 .setReqLine(reqLine)
                 .setBody(requestBody)
                 .setParam(queryParam)
@@ -204,7 +176,7 @@ public class CustomWebFilterChain {
                 .setResData(respBody);
 
         try {
-            kafkaProducer.exec("op_log", JSON.toJSONString(log));
+            kafkaProducer.exec(Topic.op_log, JSON.toJSONString(log));
         } catch (Exception e) {
             logger.error("log->'log'", e);
         }
@@ -218,36 +190,37 @@ public class CustomWebFilterChain {
 
         final LogLogin logLogin = new LogLogin()
                 .setLoginName(loginName)
-                .setPwd("")
-                .setActionTime(new Date())
-                .setActionType("1")
+                .setPwd(null)
+                .setTimestamp(System.currentTimeMillis())
+                .setActionType("login")
                 .setFrom(from)
                 .setIp(ip)
                 .setResCode(result)
                 .setResBody(respBody);
 
         try {
-            kafkaProducer.exec("login_log", JSON.toJSONString(logLogin));
+            kafkaProducer.exec(Topic.login_log, JSON.toJSONString(logLogin));
         } catch (Exception e) {
             logger.error("log->'logLogin'", e);
         }
     }
 
     private void logLogout(ServerHttpRequest request, HttpStatus statusCode, String respBody) {
-        final String loginName = RequestUtil.getCacheUser(request).getLogin_name();
+        final CacheUser cacheUser = RequestUtil.getCacheUser(request);
+        final String loginName = cacheUser == null ? null : cacheUser.getLogin_name();
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
         final int result = statusCode.value();
 
         final LogLogin logLogin = new LogLogin()
                 .setLoginName(loginName)
-                .setActionTime(new Date())
-                .setActionType("0")
+                .setTimestamp(System.currentTimeMillis())
+                .setActionType("logout")
                 .setIp(ip)
                 .setResCode(result)
                 .setResBody(respBody);
 
         try {
-            kafkaProducer.exec("login_log", JSON.toJSONString(logLogin));
+            kafkaProducer.exec(Topic.login_log, JSON.toJSONString(logLogin));
         } catch (Exception e) {
             logger.error("log->'logLogout'", e);
         }
