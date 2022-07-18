@@ -101,8 +101,6 @@ public class CustomWebFilterChain {
                 return chain.filter(exchange);
             }
 
-            logger.debug("{} {}", request.getMethod(), request.getURI());
-
             //从这里统一的获取requestBody，不用区分网关和其他服务的差异
             final String requestBody = DataBufferUtils.join(request.getBody())
                     .map(reqDataBuffer -> reqDataBuffer.toString(StandardCharsets.UTF_8))
@@ -149,6 +147,9 @@ public class CustomWebFilterChain {
                     return super.writeWith(body);
                 }
             };
+
+            logger.debug("{} {} {}", request.getMethod(), request.getURI(), requestBody);
+
             if (requestBody != null) {
                 return chain.filter(exchange.mutate().request(serverHttpRequestDecorator).response(decoratedResponse).build());
             }

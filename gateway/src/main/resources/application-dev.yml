@@ -24,6 +24,14 @@ spring:
     url: jdbc:mysql://localhost.vm:3306/spring-cloud_gateway?useUnicode=true&characterEncoding=utf8&useSSL=false&autoReconnect=true&serverTimezone=Asia/Shanghai
     username: root
     password: root
+  cloud:
+    nacos:
+      config:
+        server-addr: localhost.vm:8848
+        group: DEFAULT_GROUP
+        namespace: public
+      discovery:
+        server-addr: ${spring.cloud.nacos.config.server-addr}
 kafka:
   server: localhost.vm:9092
   groupId: ${spring.application.name}

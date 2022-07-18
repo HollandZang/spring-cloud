@@ -20,7 +20,3 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
-logging:
-  level:
-    com.holland.gateway.mapper.LogMapper.insertSelective: info
-    com.holland.gateway.mapper.LogLoginMapper.insertSelective: info
