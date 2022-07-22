@@ -1,11 +1,10 @@
 package com.holland.gateway.filter;
 
-import com.holland.gateway.swagger.SwaggerUtils;
+import com.holland.gateway.swagger.SwaggerRouteFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.filter.factory.rewrite.ModifyRequestBodyGatewayFilterFactory;
 import org.springframework.core.Ordered;
-import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -21,13 +20,12 @@ public class CacheRequestBodyFilter implements GlobalFilter, Ordered {
     @Resource
     private ModifyRequestBodyGatewayFilterFactory modifyRequestBodyFilter;
 
-    @Resource
-    private SwaggerUtils swaggerUtils;
-
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        // 过滤admin模块健康日志
+        if (exchange.getRequest().getURI().getRawPath().startsWith("/actuator")) return chain.filter(exchange);
         // 过滤swagger日志
-        if (swaggerUtils.enabledSwagger() && swaggerUtils.isSwaggerRequest(exchange.getRequest().getURI().getRawPath())) {
+        if ("true".equals(exchange.getRequest().getHeaders().getFirst(SwaggerRouteFilter.HEADER_NAME))) {
             return chain.filter(exchange);
         }
 

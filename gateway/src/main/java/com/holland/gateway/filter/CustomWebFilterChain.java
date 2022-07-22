@@ -97,7 +97,7 @@ public class CustomWebFilterChain {
             // 过滤admin模块健康日志
             if (api.startsWith("/actuator")) return chain.filter(exchange);
             // 过滤swagger日志
-            if (swaggerUtils.enabledSwagger() && swaggerUtils.isSwaggerRequest(exchange.getRequest().getURI().getRawPath())) {
+            if ("true".equals(exchange.getRequest().getHeaders().getFirst(SwaggerRouteFilter.HEADER_NAME))) {
                 return chain.filter(exchange);
             }
 
