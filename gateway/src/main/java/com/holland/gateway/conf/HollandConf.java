@@ -1,5 +1,6 @@
 package com.holland.gateway.conf;
 
+import com.alibaba.cloud.commons.lang.StringUtils;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
@@ -13,18 +14,23 @@ import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.common.UserCache;
 import com.holland.kafka.Producer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.result.method.RequestMappingInfo;
 import org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 @Import(GlobalExceptionHandle.class)
 @Configuration
@@ -62,15 +68,29 @@ public class HollandConf {
         return configService;
     }
 
+    @LoadBalanced
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+
+    @Bean
+    @LoadBalanced
+    public WebClient.Builder loadBalancedWebClientBuilder() {
+        return WebClient.builder();
+    }
+
+
     @Bean
     public AuthCheckMapping authCheckMapping() {
         final Map<RequestMappingInfo, HandlerMethod> handlerMethods = requestMappingHandlerMapping.getHandlerMethods();
         final AuthCheckMapping authCheckMapping = new AuthCheckMapping(handlerMethods.size());
         handlerMethods.forEach(((requestMappingInfo, handlerMethod) -> {
-            final String toString = requestMappingInfo.toString();
-            final String name = toString.substring(1, toString.length() - 1);
+            final String name = requestMappingInfo.getMethodsCondition().getMethods().stream().findFirst().get()
+                    + " " +
+                    requestMappingInfo.getPatternsCondition().getDirectPaths().stream().filter(StringUtils::isNotBlank).findFirst().orElse("/");
             final AuthCheck annotation = handlerMethod.getMethodAnnotation(AuthCheck.class);
-            authCheckMapping.put(name, annotation);
+            authCheckMapping.put(name, annotation == null ? null : Arrays.stream(annotation.values()).collect(Collectors.toList()));
         }));
         return authCheckMapping;
     }

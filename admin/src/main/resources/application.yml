@@ -9,6 +9,10 @@ spring:
       password: root
   profiles:
     include: admin
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost.vm:8848
 eureka:
   instance:
     prefer-ip-address: true

@@ -1,5 +1,6 @@
 package com.holland.common.entity.gateway;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,30 +22,15 @@ public class User implements UserDetails {
     @TableField(exist = false)
     private final LocalDateTime loginTime = LocalDateTime.now();
 
-    /**
-     *
-     */
-    @TableId
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    /**
-     *
-     */
     private String login_name;
 
-    /**
-     *
-     */
     private String password;
 
-    /**
-     *
-     */
     private Date create_time;
 
-    /**
-     *
-     */
     private Date update_time;
 
     private static final long serialVersionUID = 1L;

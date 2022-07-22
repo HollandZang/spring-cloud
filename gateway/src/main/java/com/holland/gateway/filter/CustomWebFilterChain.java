@@ -60,11 +60,11 @@ public class CustomWebFilterChain {
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-        final AuthCheckFilter authCheckFilter = new AuthCheckFilter(authCheckMapping, userCache);
+        final AuthCheckFilter authCheckFilter = new AuthCheckFilter(userCache);
         http
                 .addFilterAt(SwaggerRouteFilter.getWebFilter(swaggerUtils), SecurityWebFiltersOrder.HTTP_HEADERS_WRITER)
 //                .addFilterAt(corsFilter(), SecurityWebFiltersOrder.CORS)
-                .addFilterAt(authCheckFilter.filter(), SecurityWebFiltersOrder.AUTHENTICATION)
+                .addFilterAt(authCheckFilter.filterByProperties(), SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAt(logFilter(), SecurityWebFiltersOrder.LAST)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable);
         return http.build();
@@ -104,6 +104,7 @@ public class CustomWebFilterChain {
             //从这里统一的获取requestBody，不用区分网关和其他服务的差异
             final String requestBody = DataBufferUtils.join(request.getBody())
                     .map(reqDataBuffer -> reqDataBuffer.toString(StandardCharsets.UTF_8))
+                    .map(s -> s.replaceAll("\r\n|\n",""))
                     .block();
             final ServerHttpRequestDecorator serverHttpRequestDecorator;
             if (requestBody != null) {
@@ -148,7 +149,7 @@ public class CustomWebFilterChain {
                 }
             };
 
-            logger.debug("{} {} {}", request.getMethod(), request.getURI(), requestBody);
+            logger.debug("{} {} {}", request.getMethod(), request.getURI(), requestBody == null ? "" : requestBody);
 
             if (requestBody != null) {
                 return chain.filter(exchange.mutate().request(serverHttpRequestDecorator).response(decoratedResponse).build());

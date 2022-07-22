@@ -18,6 +18,7 @@ public class NacosProp {
     private static final Logger logger = LoggerFactory.getLogger(NacosProp.class);
 
     public static Properties gateway;
+    public static Properties gateway_router;
 
     static void load(ConfigService configService, String group) throws IllegalAccessException, NacosException, IOException {
         for (Field field : NacosProp.class.getDeclaredFields()) {
@@ -57,7 +58,7 @@ public class NacosProp {
                     field.set(NacosProp.class, properties);
                     if (logger.isDebugEnabled()) logger.debug("refresh NacosProp.{}\n{}", dataId, configInfo);
                 } catch (IOException | IllegalAccessException e) {
-                    throw new RuntimeException(e);
+                    logger.error("更新配置异常", e);
                 }
             }
         });

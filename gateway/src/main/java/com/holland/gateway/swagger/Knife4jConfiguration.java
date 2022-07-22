@@ -1,5 +1,7 @@
 package com.holland.gateway.swagger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,12 +19,16 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 @Configuration
 @EnableSwagger2WebMvc
 public class Knife4jConfiguration {
+    private final Logger logger = LoggerFactory.getLogger(Knife4jConfiguration.class);
 
     @Value("${spring.application.name}")
     private String name;
+    @Value("${server.port}")
+    private String port;
 
     @Bean
     public Docket defaultApi2() {
+        logger.info("enable swagger: http://localhost:{}/doc.html", port);
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(groupApiInfo(name))
                 //分组名称  想要网关被记录到swagger就不要开分组

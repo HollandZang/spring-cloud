@@ -97,7 +97,7 @@ public class UserController implements IUserController {
 
             final String encode = encoder.encode(user.getPassword());
             final Date now = new Date();
-            final int row = userMapper.insertSelective(
+            final int row = userMapper.insert(
                     user.setPassword(encode)
                             .setCreate_time(now)
                             .setUpdate_time(now));

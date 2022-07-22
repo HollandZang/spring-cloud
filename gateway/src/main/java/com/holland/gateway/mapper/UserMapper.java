@@ -14,8 +14,6 @@ import java.util.Optional;
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
 
-    int insertSelective(User record);
-
     Optional<User> selectByLoginName(String loginName);
 
     List<User> list(PageHelper pageHelper);
