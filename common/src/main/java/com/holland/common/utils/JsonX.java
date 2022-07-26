@@ -13,11 +13,15 @@ public class JsonX {
         final JSON json = (JSON) JSON.parse("{a:1,data:[{uid:\"157580\",activeCid:\"69\",activeChannel:\"kuaikan\",activeGid:\"1000\",activeIP:\"2882823743\",channelUid:\"91627840_3\",status:\"0\"}]}");
 
         final JsonX jsonX = new JsonX(json);
-        JSONObject l = jsonX.find("data[0]");
+        Object l = jsonX.find("data[0]uid");
         System.out.println(l);
     }
 
     public final JSON resource;
+
+    public JsonX(String resource) {
+        this.resource = (JSON) JSON.parse(resource);
+    }
 
     public JsonX(JSON resource) {
         this.resource = resource;
@@ -94,19 +98,19 @@ public class JsonX {
             boolean arrFlag = false;
             for (int i = 0; i < chars.length; i++) {
                 final char c = chars[i];
-                if (c == '[' && i > 0) {
-                    if (action.length() == 0) throw new RuntimeException();
+                if (c == '[') {
                     arrFlag = true;
-                    actions.add(supplierObj);
-                    list.add(action.toString());
-                    action.delete(0, action.length());
+                    if (action.length() > 0) {
+                        actions.add(supplierObj);
+                        list.add(action.toString());
+                        action.delete(0, action.length());
+                    }
                     continue;
                 }
                 if (c == ']') {
                     if (action.length() == 0) throw new RuntimeException();
                     if (!arrFlag) throw new RuntimeException();
                     final String index = action.toString();
-                    if (false) throw new RuntimeException();
                     arrFlag = false;
                     actions.add(supplierArr);
                     list.add(index);

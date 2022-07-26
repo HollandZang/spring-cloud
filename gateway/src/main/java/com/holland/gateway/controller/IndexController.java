@@ -1,9 +1,11 @@
 package com.holland.gateway.controller;
 
 import com.holland.common.utils.Response;
+import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.conf.EmailService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,21 +30,27 @@ public class IndexController {
 //    private EmailService emailService;
 
     @GetMapping()
-    public Mono<ResponseEntity<?>> test() {
-        final String forObject = restTemplate.getForObject("http://gateway/call", String.class);
-        System.out.println("restTemplate call::" + forObject);
+    public Mono<ResponseEntity<?>> test(ServerHttpRequest req) {
+//        final String forObject = restTemplate.getForObject("http://gateway/call", String.class);
+//        System.out.println("restTemplate call::" + forObject);
 
-        final String block = webClient.build()
-                .get()
-                .uri("http://gateway/call")
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-        System.out.println("webClient call::" + block);
+//        final String block = webClient.build()
+//                .get()
+//                .uri("http://gateway/call")
+//                .retrieve()
+//                .bodyToMono(String.class)
+//                .block();
+//        System.out.println("webClient call::" + block);
 
 //        final Response<String> response = emailService.test("asdzxcv").block();
 //        System.out.println("feign call::" + response);
 
+//        System.out.println(RequestUtil.getToken(req));
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return Mono.defer(() -> Mono.just(name + "::OK\n" + new Date()))
                 .map(it -> ResponseEntity.ok().body(it));
     }

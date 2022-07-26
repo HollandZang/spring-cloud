@@ -319,7 +319,7 @@ public class EvalX {
         }
     }
 
-    private static class EvalXException extends RuntimeException {
+    public static class EvalXException extends RuntimeException {
         public EvalXException() {
         }
 
