@@ -22,4 +22,5 @@ create table `spring-cloud_gateway`.user
     update_time timestamp null
     )
 comment '用户信息表';
-
+ALTER TABLE `spring-cloud_gateway`.`user`
+    ADD INDEX `IDX_LOGIN_NAME`(`login_name`);
