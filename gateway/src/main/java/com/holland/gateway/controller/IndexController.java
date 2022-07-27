@@ -46,11 +46,11 @@ public class IndexController {
 //        System.out.println("feign call::" + response);
 
 //        System.out.println(RequestUtil.getToken(req));
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
         return Mono.defer(() -> Mono.just(name + "::OK\n" + new Date()))
                 .map(it -> ResponseEntity.ok().body(it));
     }
