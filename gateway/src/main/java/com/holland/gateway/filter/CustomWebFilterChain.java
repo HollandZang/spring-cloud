@@ -2,13 +2,14 @@ package com.holland.gateway.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.exception.NacosException;
 import com.holland.common.aggregate.CacheUser;
 import com.holland.common.entity.gateway.Log;
 import com.holland.common.entity.gateway.LogLogin;
 import com.holland.common.entity.gateway.User;
 import com.holland.common.spring.AuthCheckMapping;
 import com.holland.gateway.common.RequestUtil;
-import com.holland.gateway.common.UserCache;
 import com.holland.gateway.swagger.SwaggerRouteFilter;
 import com.holland.gateway.swagger.SwaggerUtils;
 import com.holland.kafka.Producer;
@@ -17,6 +18,7 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -43,9 +45,10 @@ import java.util.Map;
 @Configuration
 @EnableWebFluxSecurity
 public class CustomWebFilterChain {
-
+    @Value("${spring.cloud.nacos.config.group}")
+    private String group;
     @Resource
-    private UserCache userCache;
+    private ConfigService configService;
 
     @Resource
     private SwaggerUtils swaggerUtils;
@@ -59,15 +62,23 @@ public class CustomWebFilterChain {
     private final Logger logger = LoggerFactory.getLogger(CustomWebFilterChain.class);
 
     @Bean
-    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-        final AuthCheckFilter authCheckFilter = new AuthCheckFilter(userCache);
+    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) throws NacosException {
         http
+                .addFilterAt(firstFilter(), SecurityWebFiltersOrder.FIRST)
                 .addFilterAt(SwaggerRouteFilter.getWebFilter(swaggerUtils), SecurityWebFiltersOrder.HTTP_HEADERS_WRITER)
 //                .addFilterAt(corsFilter(), SecurityWebFiltersOrder.CORS)
-                .addFilterAt(authCheckFilter.filterByProperties(), SecurityWebFiltersOrder.AUTHENTICATION)
+                .addFilterAt(new AuthCheckFilter(authCheckMapping).filterByProperties(group, configService), SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAt(logFilter(), SecurityWebFiltersOrder.LAST)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable);
         return http.build();
+    }
+
+    private WebFilter firstFilter() {
+        return (exchange, chain) -> {
+            ServerHttpRequest request = exchange.getRequest();
+            request = RequestUtil.setCacheUser(request);
+            return chain.filter(exchange.mutate().request(request).build());
+        };
     }
 
     private WebFilter corsFilter() {
@@ -104,7 +115,7 @@ public class CustomWebFilterChain {
             //从这里统一的获取requestBody，不用区分网关和其他服务的差异
             final String requestBody = DataBufferUtils.join(request.getBody())
                     .map(reqDataBuffer -> reqDataBuffer.toString(StandardCharsets.UTF_8))
-                    .map(s -> s.replaceAll("\r\n|\n",""))
+                    .map(s -> s.replaceAll("\r\n|\n", ""))
                     .block();
             final ServerHttpRequestDecorator serverHttpRequestDecorator;
             if (requestBody != null) {

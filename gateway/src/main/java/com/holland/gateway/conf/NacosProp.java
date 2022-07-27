@@ -13,6 +13,7 @@ import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 public class NacosProp {
     private static final Logger logger = LoggerFactory.getLogger(NacosProp.class);
@@ -37,7 +38,7 @@ public class NacosProp {
         }
     }
 
-    static void listen(ConfigService configService, String group, String dataId) throws NacosException {
+    public static void listen(ConfigService configService, String group, String dataId, Consumer<Properties> consumer) throws NacosException {
         final Field field;
         try {
             field = NacosProp.class.getDeclaredField(dataId);
@@ -56,6 +57,7 @@ public class NacosProp {
                 try {
                     properties.load(new ByteArrayInputStream(configInfo.getBytes(StandardCharsets.UTF_8)));
                     field.set(NacosProp.class, properties);
+                    consumer.accept(properties);
                     if (logger.isDebugEnabled()) logger.debug("refresh NacosProp.{}\n{}", dataId, configInfo);
                 } catch (IOException | IllegalAccessException e) {
                     logger.error("更新配置异常", e);

@@ -41,7 +41,8 @@ public class JsonRpc2Controller {
     @PostMapping("/send")
     Publisher<?> get(ServerHttpRequest req, @RequestBody String requestBody) {
         final Map<String, String> headers = new HashMap<>();
-        headers.put("HAuth", RequestUtil.getToken(req));
+        headers.put(RequestUtil.AUTH_KEY, RequestUtil.getToken(req));
+        headers.put(RequestUtil.USER_KEY, RequestUtil.getCacheUserStr(req));
 
         if (requestBody != null) {
             if (JSON.isValidArray(requestBody)) {

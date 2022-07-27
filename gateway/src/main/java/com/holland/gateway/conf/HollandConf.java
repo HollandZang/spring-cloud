@@ -58,7 +58,6 @@ public class HollandConf {
         properties.put("namespace", namespace);
         configService = NacosFactory.createConfigService(properties);
         NacosProp.load(configService, group);
-        NacosProp.listen(configService, group, "gateway");
 
         RequestUtil.init(userCache);
     }

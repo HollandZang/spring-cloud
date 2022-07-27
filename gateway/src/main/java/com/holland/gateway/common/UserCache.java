@@ -44,12 +44,12 @@ public class UserCache extends Redis {
     }
 
     public CacheUser get(String token) {
-        final String userStr = exec(0, jedis -> jedis.get(token));
+        final String userStr = exec(0, jedis -> jedis.get(tokenKeyPrefix + token));
         return JSON.parseObject(userStr, CacheUser.class);
     }
 
     public String getTokenByLoginName(String loginName) {
-        return exec(1, jedis -> jedis.get(loginName));
+        return exec(1, jedis -> jedis.get(userKeyPrefix + loginName));
     }
 
     public Boolean del(String token) {

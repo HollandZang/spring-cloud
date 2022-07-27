@@ -1,10 +1,11 @@
 package com.holland.gateway.filter;
 
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.exception.NacosException;
 import com.holland.common.aggregate.CacheUser;
 import com.holland.common.spring.AuthCheck;
 import com.holland.common.spring.AuthCheckMapping;
 import com.holland.gateway.common.RequestUtil;
-import com.holland.gateway.common.UserCache;
 import com.holland.gateway.conf.NacosProp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -24,24 +26,31 @@ public class AuthCheckFilter {
 
     private final Logger logger = LoggerFactory.getLogger(AuthCheckFilter.class);
 
-    private UserCache userCache;
+    private final AuthCheckMapping authCheckMapping;
     private final List<Function<ServerHttpRequest, Function<StringBuilder, Function<List<AuthCheck.AuthCheckEnum>, HttpStatus>>>> checkHandler;
 
-    public AuthCheckFilter(UserCache userCache) {
-        this.userCache = userCache;
+    public AuthCheckFilter(AuthCheckMapping authCheckMapping) {
+        this.authCheckMapping = authCheckMapping;
 
         checkHandler = new ArrayList<>();
         checkHandler.add(checkToken);
         checkHandler.add(checkAdmin);
     }
 
-    public WebFilter filterByAnnotation(AuthCheckMapping authCheckMapping) {
+    public WebFilter filterByAnnotation() {
         return (exchange, chain) -> {
             final ServerHttpRequest request = exchange.getRequest();
             final String reqLine = request.getMethodValue() + " " + request.getURI().getRawPath();
             final List<AuthCheck.AuthCheckEnum> enums = authCheckMapping.get(reqLine);
             if (enums != null && enums.size() > 0) {
-                final StringBuilder builder = logger.isDebugEnabled() ? new StringBuilder("authCheck: ") : null;
+                final StringBuilder builder;
+                if (logger.isDebugEnabled()) {
+                    final String token = RequestUtil.getToken(request);
+                    final CacheUser cacheUser = RequestUtil.getCacheUser(request);
+                    builder = new StringBuilder("authCheck: reqLine=" + reqLine + " , token=" + token + ", loginName=" + (cacheUser == null ? null : cacheUser.getLogin_name()) + ", ");
+                } else {
+                    builder = null;
+                }
                 final ServerHttpResponse originalResponse = exchange.getResponse();
 
                 for (Function<ServerHttpRequest, Function<StringBuilder, Function<List<AuthCheck.AuthCheckEnum>, HttpStatus>>> function : checkHandler) {
@@ -60,37 +69,33 @@ public class AuthCheckFilter {
         };
     }
 
-    public WebFilter filterByProperties() {
-        final AuthCheckMapping authCheckMapping = new AuthCheckMapping(NacosProp.gateway_router.size());
-        NacosProp.gateway_router.forEach((k, v) -> {
+    public WebFilter filterByProperties(String group, ConfigService configService) throws NacosException {
+        NacosProp.gateway_router.forEach(setAuthCheckMappingByNacos(authCheckMapping));
+        NacosProp.listen(configService, group, "gateway_router", properties -> properties.forEach(setAuthCheckMappingByNacos(authCheckMapping)));
+        return filterByAnnotation();
+    }
+
+    private BiConsumer<Object, Object> setAuthCheckMappingByNacos(AuthCheckMapping authCheckMapping) {
+        authCheckMapping.clear();
+        return (k, v) -> {
             final String s = v.toString();
             if (s.isBlank()) return;
             final List<AuthCheck.AuthCheckEnum> enums = Arrays.stream(s.split(","))
                     .map(auth -> AuthCheck.AuthCheckEnum.valueOf(auth.toUpperCase()))
                     .collect(Collectors.toList());
             authCheckMapping.put(k.toString(), enums);
-        });
-        return filterByAnnotation(authCheckMapping);
+        };
     }
 
     private final Function<ServerHttpRequest, Function<StringBuilder, Function<List<AuthCheck.AuthCheckEnum>, HttpStatus>>> checkToken = request -> builder -> authCheck -> {
         final Optional<AuthCheck.AuthCheckEnum> o = authCheck.stream().filter(v -> v.equals(AuthCheck.AuthCheckEnum.TOKEN)).findAny();
         if (o.isPresent()) {
-            final String token = RequestUtil.getToken(request);
-            //token验证: 需要token的接口没传token
-            if (token == null) {
-                if (logger.isDebugEnabled())
-                    builder.append(", checkToken=ERR");
-                return HttpStatus.UNAUTHORIZED;
-            }
-            //token验证: token有效性
-            final CacheUser cacheUser = userCache.get(token);
+            final CacheUser cacheUser = RequestUtil.getCacheUser(request);
             if (cacheUser == null) {
                 if (logger.isDebugEnabled())
                     builder.append(", checkToken=ERR");
                 return HttpStatus.UNAUTHORIZED;
             }
-            RequestUtil.setCacheUser(request, cacheUser);
             if (logger.isDebugEnabled())
                 builder.append(", checkToken=OK");
         }
