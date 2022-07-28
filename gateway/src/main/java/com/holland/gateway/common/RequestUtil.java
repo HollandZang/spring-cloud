@@ -15,6 +15,10 @@ public class RequestUtil {
         RequestUtil.userCache = c;
     }
 
+    public static String getReqLine(ServerHttpRequest request) {
+        return request.getMethodValue() + " " + request.getURI().getRawPath();
+    }
+
     public static String getToken(ServerHttpRequest request) {
         return request.getHeaders().getFirst(AUTH_KEY);
     }

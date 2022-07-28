@@ -4,18 +4,29 @@ import com.alibaba.fastjson.JSON;
 import com.holland.common.aggregate.CacheUser;
 import com.holland.common.entity.gateway.User;
 import com.holland.common.utils.Validator;
+import com.holland.redis.Lock;
 import com.holland.redis.Redis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * select 1,2
+ */
 @Configuration
-public class UserCache extends Redis {
-    private final Logger logger = LoggerFactory.getLogger(UserCache.class);
+public class UserCache {
+    private final Logger logger = LoggerFactory.getLogger(Redis.class);
+
+    @Resource
+    public Redis redis;
 
     /* MINUTES */
     @Value("${spring.redis.token-timeout:60}")
@@ -25,48 +36,57 @@ public class UserCache extends Redis {
     @Value("${spring.redis.user-key-prefix:login_name_to_token:}")
     private String userKeyPrefix;
 
-    public UserCache(@Value("${spring.redis.host}") String host
-            , @Value("${spring.redis.port}") int port) {
-        super(host, port);
+    public Lock lock(String... lockName) {
+        final List<String> list = new ArrayList<>();
+        list.add("user");
+        list.addAll(Arrays.asList(lockName));
+        return redis.lock(list.toArray(String[]::new));
     }
 
     public String cache(User user) {
         final String token = UUID.randomUUID().toString();
         final CacheUser cacheUser = CacheUser.from(user)
                 .setToken(token)
-                .setExpireTime(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(tokenTimeout))
-                .setRole("admin");
+                .setExpireTime(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(tokenTimeout));
 
         final int seconds = (int) TimeUnit.MINUTES.toSeconds(tokenTimeout);
-        exec(0, jedis -> jedis.setex(tokenKeyPrefix + token, seconds, JSON.toJSONString(cacheUser)));
-        exec(1, jedis -> jedis.setex(userKeyPrefix + user.getLogin_name(), seconds, token));
+        redis.exec(2, jedis -> jedis.setex(tokenKeyPrefix + token, seconds, JSON.toJSONString(cacheUser)));
+        redis.exec(1, jedis -> jedis.setex(userKeyPrefix + user.getLogin_name(), seconds, token));
         return token;
     }
 
     public CacheUser get(String token) {
-        final String userStr = exec(0, jedis -> jedis.get(tokenKeyPrefix + token));
+        final String userStr = redis.exec(2, jedis -> jedis.get(tokenKeyPrefix + token));
         return JSON.parseObject(userStr, CacheUser.class);
     }
 
     public String getTokenByLoginName(String loginName) {
-        return exec(1, jedis -> jedis.get(userKeyPrefix + loginName));
+        return redis.exec(1, jedis -> jedis.get(userKeyPrefix + loginName));
+    }
+
+    public void refresh(String token, User user) {
+        final CacheUser cacheUser = get(token)
+                .refresh(user)
+                .setExpireTime(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(tokenTimeout));
+        final int seconds = (int) TimeUnit.MINUTES.toSeconds(tokenTimeout);
+        redis.exec(2, jedis -> jedis.setex(tokenKeyPrefix + token, seconds, JSON.toJSONString(cacheUser)));
     }
 
     public Boolean del(String token) {
         final CacheUser cacheUser = get(token);
         if (cacheUser != null) {
-            exec(1, jedis -> jedis.del(userKeyPrefix + cacheUser.getLogin_name()));
+            redis.exec(1, jedis -> jedis.del(userKeyPrefix + cacheUser.getLogin_name()));
         }
-        exec(0, jedis -> jedis.del(tokenKeyPrefix + token));
+        redis.exec(2, jedis -> jedis.del(tokenKeyPrefix + token));
         return true;
     }
 
     public Boolean delByLoginName(String loginName) {
         final String token = getTokenByLoginName(loginName);
         if (token != null) {
-            exec(0, jedis -> jedis.del(tokenKeyPrefix + token));
+            redis.exec(2, jedis -> jedis.del(tokenKeyPrefix + token));
         }
-        exec(1, jedis -> jedis.del(userKeyPrefix + loginName));
+        redis.exec(1, jedis -> jedis.del(userKeyPrefix + loginName));
         return true;
     }
 

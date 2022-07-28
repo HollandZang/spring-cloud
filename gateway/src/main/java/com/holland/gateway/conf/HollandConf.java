@@ -13,6 +13,7 @@ import com.holland.common.spring.configuration.GlobalExceptionHandle;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.common.UserCache;
 import com.holland.kafka.Producer;
+import com.holland.redis.Redis;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
@@ -60,6 +61,12 @@ public class HollandConf {
         NacosProp.load(configService, group);
 
         RequestUtil.init(userCache);
+    }
+
+    @Bean
+    public Redis redis(@Value("${spring.redis.host}") String host
+            , @Value("${spring.redis.port}") int port) {
+        return new Redis(host, port);
     }
 
     @Bean

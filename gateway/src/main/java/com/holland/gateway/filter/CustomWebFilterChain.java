@@ -140,7 +140,7 @@ public class CustomWebFilterChain {
                                         .doOnNext(dataBuffer -> {
                                             final String respBody = dataBuffer.toString(StandardCharsets.UTF_8);
                                             //输出body
-                                            logger.debug("Response : status = {}, body = {}", exchange.getResponse().getStatusCode().toString(), respBody);
+                                            logger.debug(request.getId() + " Response : status = {}, body = {}", exchange.getResponse().getStatusCode().toString(), respBody);
 
                                             switch (request.getURI().getRawPath()) {
                                                 case "/user/login":
@@ -160,7 +160,7 @@ public class CustomWebFilterChain {
                 }
             };
 
-            logger.debug("{} {} {}", request.getMethod(), request.getURI(), requestBody == null ? "" : requestBody);
+            logger.debug(request.getId() + " {} {} {}", request.getMethod(), request.getURI(), requestBody == null ? "" : requestBody);
 
             if (requestBody != null) {
                 return chain.filter(exchange.mutate().request(serverHttpRequestDecorator).response(decoratedResponse).build());
@@ -191,7 +191,7 @@ public class CustomWebFilterChain {
         try {
             kafkaProducer.exec(Topic.op_log, JSON.toJSONString(log));
         } catch (Exception e) {
-            logger.error("log->'log'", e);
+            logger.error(request.getId() + " log->'log'", e);
         }
     }
 
@@ -214,7 +214,7 @@ public class CustomWebFilterChain {
         try {
             kafkaProducer.exec(Topic.login_log, JSON.toJSONString(logLogin));
         } catch (Exception e) {
-            logger.error("log->'logLogin'", e);
+            logger.error(request.getId() + " log->'logLogin'", e);
         }
     }
 
@@ -235,7 +235,7 @@ public class CustomWebFilterChain {
         try {
             kafkaProducer.exec(Topic.login_log, JSON.toJSONString(logLogin));
         } catch (Exception e) {
-            logger.error("log->'logLogout'", e);
+            logger.error(request.getId() + " log->'logLogout'", e);
         }
     }
 

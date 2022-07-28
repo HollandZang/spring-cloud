@@ -18,7 +18,7 @@ import java.util.List;
 public interface IUserController {
     @ApiOperation("获取用户列表")
     @GetMapping("/list")
-    Mono<Response<List<User>>> list(Page<User> page);
+    Mono<Response<List<User>>> list(@RequestBody Page<User> page);
 
     @ApiOperation("登录")
     @PostMapping("/login")

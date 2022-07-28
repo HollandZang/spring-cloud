@@ -1,19 +1,24 @@
 package com.holland.gateway.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.holland.common.aggregate.CacheUser;
 import com.holland.common.aggregate.LoginUser;
 import com.holland.common.entity.gateway.User;
+import com.holland.common.entity.gateway.UserRole;
+import com.holland.common.spring.AuthCheck;
 import com.holland.common.spring.apis.gateway.IUserController;
 import com.holland.common.utils.Response;
 import com.holland.common.utils.Validator;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.common.UserCache;
 import com.holland.gateway.mapper.UserMapper;
+import com.holland.gateway.mapper.UserRoleMapper;
+import com.holland.gateway.service.UserService;
 import com.holland.redis.Lock;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
@@ -21,7 +26,6 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class UserController implements IUserController {
@@ -29,12 +33,18 @@ public class UserController implements IUserController {
     private UserMapper userMapper;
 
     @Resource
+    private UserRoleMapper userRoleMapper;
+
+    @Resource
+    private UserService userService;
+
+    @Resource
     private UserCache userCache;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(8);
 
     @Override
-    public Mono<Response<List<User>>> list(Page<User> page) {
+    public Mono<Response<List<User>>> list(@RequestBody Page<User> page) {
         final Page<User> userPage = userMapper.selectPage(page, null);
         for (User user : userPage.getRecords()) {
             user.setPassword(null);
@@ -53,18 +63,21 @@ public class UserController implements IUserController {
             try (Lock lock = userCache.lock("login", user.getLogin_name())) {
                 if (!lock.isLocked())
                     return Mono.just(Response.later());
-                final Optional<User> optional = userMapper.selectByLoginName(loginName);
-                if (optional.isEmpty()) {
+                final User dbUser = userMapper.selectOne(new QueryWrapper<User>().eq("login_name", loginName));
+                if (dbUser == null) {
 //                return Mono.just(Response.failed("用户不存在"));
                     return Mono.just(Response.failed("账号或密码错误"));
                 }
-                final User dbUser = optional.get();
                 if (encoder.matches(password, dbUser.getPassword())) {
                     userCache.delByLoginName(dbUser.getLogin_name());
 
+                    final UserRole userRole = userRoleMapper.selectOne(new QueryWrapper<UserRole>().eq("login_name", loginName));
+                    if (userRole != null && userRole.getRoles() != null)
+                        dbUser.setRoles(userRole.getRoles());
+
                     final LoginUser vo = LoginUser.from(dbUser);
                     vo.setPassword(null);
-                    vo.setToken(userCache.cache(user));
+                    vo.setToken(userCache.cache(dbUser));
                     return Mono.just(Response.success(vo));
                 } else {
                     return Mono.just(Response.failed("账号或密码错误"));
@@ -90,10 +103,9 @@ public class UserController implements IUserController {
         Validator.test(user.getPassword(), "密码").notEmpty().maxLength(16);
 
         return Mono.defer(() -> {
-            final Optional<User> optional = userMapper.selectByLoginName(user.getLogin_name());
-            if (optional.isPresent()) {
-                return Mono.just(Response.failed("账号已存在"));
-            }
+            final User dbUser = userMapper.selectOne(new QueryWrapper<User>().eq("login_name", user.getLogin_name()));
+            if (dbUser != null)
+                return Mono.just(Response.existErr("账号"));
 
             final String encode = encoder.encode(user.getPassword());
             final Date now = new Date();
@@ -105,31 +117,24 @@ public class UserController implements IUserController {
         });
     }
 
+    @AuthCheck(values = AuthCheck.AuthCheckEnum.TOKEN)
     @Override
     public Mono<Response<Integer>> update(ServerHttpRequest request, @RequestBody User user) {
         Validator.test(user.getPassword(), "密码").maxLength(16);
+        Validator.test(user.getRoles(), "角色").maxLength(256);
 
-        user.setLogin_name(RequestUtil.getCacheUser(request).getLogin_name());
+        final CacheUser cacheUser = RequestUtil.getCacheUser(request);
+        if (cacheUser == null)
+            return Mono.defer(() -> Mono.just(Response.notExistErr("资源")));
+        final String login_name = cacheUser.getLogin_name();
+        user.setLogin_name(login_name);
 
-        try (Lock lock = userCache.lock("update", user.getLogin_name())) {
+        try (Lock lock = userCache.lock("update", login_name)) {
             if (!lock.isLocked())
                 return Mono.just(Response.later());
-            final Optional<User> optional = userMapper.selectByLoginName(user.getLogin_name());
-            if (optional.isEmpty()) {
-                return Mono.defer(() -> Mono.just(Response.failed("资源不存在")));
-            }
 
-            if (StringUtils.hasText(user.getPassword())) {
-                user.setPassword(encoder.encode(user.getPassword()));
-            }
-
-            final int row = userMapper.updateByUserSelective(
-                    user.setUpdate_time(new Date()));
-            if (row == 0) {
-                return Mono.defer(() -> Mono.just(Response.failed("资源不存在")));
-            }
-            return Mono.defer(() -> Mono.just(Response.success(row)));
+            userService.updateUser(request, user, cacheUser, login_name, encoder);
+            return Mono.defer(() -> Mono.just(Response.success()));
         }
     }
-
 }

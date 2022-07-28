@@ -8,10 +8,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 用户信息表
@@ -21,6 +21,10 @@ import java.util.List;
 public class User implements UserDetails {
     @TableField(exist = false)
     private final LocalDateTime loginTime = LocalDateTime.now();
+    @TableField(exist = false)
+    private final Set<GrantedAuthority> authorities = new HashSet<>();
+    @TableField(exist = false)
+    private String roles;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
@@ -53,10 +57,19 @@ public class User implements UserDetails {
         return this;
     }
 
+    public String getRoles() {
+        return roles;
+    }
+
+    public void setRoles(String roles) {
+        this.roles = roles;
+        for (String s : roles.split(",")) {
+            this.authorities.add(new SimpleGrantedAuthority(s));
+        }
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("admin"));
         return authorities;
     }
 

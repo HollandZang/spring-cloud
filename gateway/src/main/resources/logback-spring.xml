@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <property name="LOGS" value="./logs"/>
-    <property name="NAME" value="gateway"/>
+    <property name="LOGS" value="./logs/gateway"/>
+    <property name="NAME" value="core"/>
+    <property name="CACHE" value="cache"/>
+    <property name="KAFKA" value="kafka"/>
 
     <appender name="Console"
               class="ch.qos.logback.core.ConsoleAppender">
@@ -13,7 +15,7 @@
         </layout>
     </appender>
 
-    <appender name="RollingFile"
+    <appender name="CoreFile"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOGS}/${NAME}.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
@@ -32,10 +34,61 @@
         </rollingPolicy>
     </appender>
 
+    <appender name="CacheFile"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS}/${CACHE}.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>
+                %d{ISO8601} %msg%n
+            </Pattern>
+        </encoder>
+
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover daily and when the file reaches 10 MegaBytes -->
+            <fileNamePattern>${LOGS}/archived/${CACHE}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="KafkaFile"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS}/${KAFKA}.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>
+                %d{ISO8601} %msg%n
+            </Pattern>
+        </encoder>
+
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover daily and when the file reaches 10 MegaBytes -->
+            <fileNamePattern>${LOGS}/archived/${KAFKA}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
     <!-- LOG everything at INFO level -->
     <root level="info">
         <appender-ref ref="Console"/>
-        <!--        <appender-ref ref="RollingFile"/>-->
+        <!--        <appender-ref ref="CoreFile"/>-->
     </root>
 
+    <logger name="com.holland.redis.Redis" additivity="false" level="TRACE">
+        <appender-ref ref="Console"/>
+        <!--        <appender-ref ref="CacheFile"/>-->
+    </logger>
+
+    <logger name="com.holland.kafka.Producer" additivity="false" level="DEBUG">
+        <appender-ref ref="Console"/>
+        <!--        <appender-ref ref="KafkaFile"/>-->
+    </logger>
+    <logger name="com.holland.kafka.Consumer" additivity="false" level="DEBUG">
+        <appender-ref ref="Console"/>
+        <!--        <appender-ref ref="KafkaFile"/>-->
+    </logger>
 </configuration>

@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 public class AuthCheckFilter {
 
     private final Logger logger = LoggerFactory.getLogger(AuthCheckFilter.class);
+    private boolean checkByAnnotation = true;
 
     private final AuthCheckMapping authCheckMapping;
     private final List<Function<ServerHttpRequest, Function<StringBuilder, Function<List<AuthCheck.AuthCheckEnum>, HttpStatus>>>> checkHandler;
@@ -38,6 +39,7 @@ public class AuthCheckFilter {
     }
 
     public WebFilter filterByAnnotation() {
+        logger.info("AuthCheckFilter by {}", checkByAnnotation ? "Annotation" : "Properties");
         return (exchange, chain) -> {
             final ServerHttpRequest request = exchange.getRequest();
             final String reqLine = request.getMethodValue() + " " + request.getURI().getRawPath();
@@ -47,7 +49,7 @@ public class AuthCheckFilter {
                 if (logger.isDebugEnabled()) {
                     final String token = RequestUtil.getToken(request);
                     final CacheUser cacheUser = RequestUtil.getCacheUser(request);
-                    builder = new StringBuilder("authCheck: reqLine=" + reqLine + " , token=" + token + ", loginName=" + (cacheUser == null ? null : cacheUser.getLogin_name()) + ", ");
+                    builder = new StringBuilder(request.getId() + " authCheck: reqLine=" + reqLine + " , token=" + token + ", loginName=" + (cacheUser == null ? null : cacheUser.getLogin_name()) + ", ");
                 } else {
                     builder = null;
                 }
@@ -63,13 +65,14 @@ public class AuthCheckFilter {
                     }
                 }
                 if (logger.isDebugEnabled())
-                    logger.debug(builder.toString());
+                    logger.trace(builder.toString());
             }
             return chain.filter(exchange);
         };
     }
 
     public WebFilter filterByProperties(String group, ConfigService configService) throws NacosException {
+        checkByAnnotation = false;
         NacosProp.gateway_router.forEach(setAuthCheckMappingByNacos(authCheckMapping));
         NacosProp.listen(configService, group, "gateway_router", properties -> properties.forEach(setAuthCheckMappingByNacos(authCheckMapping)));
         return filterByAnnotation();
@@ -111,7 +114,7 @@ public class AuthCheckFilter {
                     builder.append(", checkToken=ERR");
                 return HttpStatus.UNAUTHORIZED;
             }
-            if (!"admin".equals(cacheUser.getRole())) {
+            if (!"admin".equals(cacheUser.getRoles())) {
                 if (logger.isDebugEnabled())
                     builder.append(", checkAdmin=ERR");
                 return HttpStatus.FORBIDDEN;

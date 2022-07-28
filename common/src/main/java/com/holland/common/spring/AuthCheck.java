@@ -11,7 +11,7 @@ public @interface AuthCheck {
     AuthCheckEnum[] values();
 
     enum AuthCheckEnum {
-        TOKEN, ADMIN;
+        TOKEN, ADMIN, GUEST;
     }
 
 }

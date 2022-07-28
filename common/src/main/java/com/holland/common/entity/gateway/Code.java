@@ -1,68 +1,59 @@
 package com.holland.common.entity.gateway;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
 
 /**
- * 
  * @TableName code
  */
 public class Code implements Serializable {
-    /**
-     * 
-     */
-    private String type;
 
-    /**
-     * 
-     */
-    private String code;
+    @TableId(value = "id", type = IdType.AUTO)
+    private Integer id;
 
-    /**
-     * 
-     */
-    private String name;
+    private String val;
+
+    private String code_type_id;
+
+    private String des;
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 
-     */
-    public String getType() {
-        return type;
+    public Integer getId() {
+        return id;
     }
 
-    /**
-     * 
-     */
-    public void setType(String type) {
-        this.type = type;
+    public Code setId(Integer id) {
+        this.id = id;
+        return this;
     }
 
-    /**
-     * 
-     */
-    public String getCode() {
-        return code;
+    public String getVal() {
+        return val;
     }
 
-    /**
-     * 
-     */
-    public void setCode(String code) {
-        this.code = code;
+    public Code setVal(String val) {
+        this.val = val;
+        return this;
     }
 
-    /**
-     * 
-     */
-    public String getName() {
-        return name;
+    public String getCode_type_id() {
+        return code_type_id;
     }
 
-    /**
-     * 
-     */
-    public void setName(String name) {
-        this.name = name;
+    public Code setCode_type_id(String code_type_id) {
+        this.code_type_id = code_type_id;
+        return this;
+    }
+
+    public String getDes() {
+        return des;
+    }
+
+    public Code setDes(String des) {
+        this.des = des;
+        return this;
     }
 }

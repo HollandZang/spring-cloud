@@ -43,6 +43,14 @@ public class Response<T> {
         return new Response<>(500, e.getClass().getName() + "::" + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()), null, 0);
     }
 
+    public static <T> Response<T> existErr(String name, Object... args) {
+        return failed(name + "已存在", args);
+    }
+
+    public static <T> Response<T> notExistErr(String name, Object... args) {
+        return failed(name + "不存在", args);
+    }
+
     private static final Pattern LOGGER_COMPILE = Pattern.compile("\\{}");
 
     public static <T> Response<T> failed(String msg, Object... args) {
@@ -60,6 +68,7 @@ public class Response<T> {
                 break;
             }
         }
+        if (end < msg.length()) newMsg.append(msg.substring(end));
         return new Response<>(500, newMsg.toString(), null, 0);
     }
 

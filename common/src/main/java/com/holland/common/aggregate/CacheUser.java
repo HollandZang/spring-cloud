@@ -1,19 +1,36 @@
 package com.holland.common.aggregate;
 
 import com.holland.common.entity.gateway.User;
+import org.springframework.beans.BeanUtils;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 public class CacheUser extends User {
     private Long expireTime;
     private String token;
 
-    private String role;
-
     public static CacheUser from(User user) {
-        return (CacheUser) new CacheUser()
-                .setId(user.getId())
-                .setLogin_name(user.getLogin_name())
-                .setCreate_time(user.getCreate_time())
-                .setUpdate_time(user.getUpdate_time());
+        final CacheUser cacheUser = new CacheUser();
+        BeanUtils.copyProperties(user, cacheUser);
+        return cacheUser;
+    }
+
+    public CacheUser refresh(User user) {
+        for (Field field : user.getClass().getDeclaredFields()) {
+            final int i = field.getModifiers();
+            if (Modifier.isPrivate(i) && !Modifier.isFinal(i) && !Modifier.isStatic(i)) {
+                field.setAccessible(true);
+                try {
+                    final Object o = field.get(user);
+                    field.set(this, o);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        this.setRoles(user.getRoles());
+        return this;
     }
 
     public Long getExpireTime() {
@@ -31,15 +48,6 @@ public class CacheUser extends User {
 
     public CacheUser setToken(String token) {
         this.token = token;
-        return this;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public CacheUser setRole(String role) {
-        this.role = role;
         return this;
     }
 }
