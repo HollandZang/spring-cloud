@@ -96,52 +96,62 @@ public class JsonX {
             final char[] chars = word.toCharArray();
             final StringBuilder action = new StringBuilder();
             boolean arrFlag = false;
-            for (int i = 0; i < chars.length; i++) {
-                final char c = chars[i];
-                if (c == '[') {
-                    arrFlag = true;
-                    if (action.length() > 0) {
+            int i = 0;
+            try {
+                for (; i < chars.length; i++) {
+                    final char c = chars[i];
+                    if (c == '[') {
+                        arrFlag = true;
+                        if (action.length() > 0) {
+                            actions.add(supplierObj);
+                            list.add(action.toString());
+                            action.delete(0, action.length());
+                        }
+                        continue;
+                    }
+                    if (c == ']') {
+                        if (action.length() == 0) throw new RuntimeException("cannot start with ']'");
+                        if (!arrFlag) throw new RuntimeException("']' was found extra outside the array");
+                        arrFlag = false;
+                        actions.add(supplierArr);
+                        list.add(action.toString());
+                        action.delete(0, action.length());
+                        continue;
+                    }
+                    if (c == '.') {
+                        if (action.length() == 0) {
+                            if (chars[i - 1] == ']') continue;
+                            throw new RuntimeException("cannot start with '.'");
+                        }
+                        if (arrFlag) throw new RuntimeException("tried to parse the array, but found '.'");
                         actions.add(supplierObj);
                         list.add(action.toString());
                         action.delete(0, action.length());
+                        continue;
                     }
-                    continue;
-                }
-                if (c == ']') {
-                    if (action.length() == 0) throw new RuntimeException(String.valueOf(i));
-                    if (!arrFlag) throw new RuntimeException(String.valueOf(i));
-                    final String index = action.toString();
-                    arrFlag = false;
-                    actions.add(supplierArr);
-                    list.add(index);
-                    action.delete(0, action.length());
-                    continue;
-                }
-                if (c == '.') {
-                    if (action.length() == 0) {
-                        if (chars[i - 1] == ']') continue;
-                        throw new RuntimeException(String.valueOf(i));
+                    action.append(c);
+                    if (i == chars.length - 1) {
+                        if (arrFlag) throw new RuntimeException("find '[', but there is no ']' until the end");
+                        actions.add(supplierObj);
+                        list.add(action.toString());
                     }
-                    if (arrFlag) throw new RuntimeException(String.valueOf(i));
-                    actions.add(supplierObj);
-                    list.add(action.toString());
-                    action.delete(0, action.length());
-                    continue;
                 }
-                action.append(c);
-                if (i == chars.length - 1) {
-                    if (arrFlag) throw new RuntimeException(String.valueOf(i));
-                    actions.add(supplierObj);
-                    list.add(action.toString());
-                }
+            } catch (Exception e) {
+                throw new RuntimeException("syntax error, charAt " + i + " : " + chars[i], e);
             }
 
             Object res = json;
-            for (int i = 0; i < actions.size(); i++) {
-                res = actions.get(i).apply(res, list.get(i));
+            try {
+                i = 0;
+                String word;
+                for (; i < actions.size(); i++) {
+                    word = list.get(i);
+                    res = actions.get(i).apply(res, word);
+                }
+                return (T) convert(res);
+            } catch (Exception e) {
+                throw new RuntimeException("syntax error, keyword = " + word, e);
             }
-
-            return (T) convert(res);
         }
     }
 
