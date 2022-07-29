@@ -2,7 +2,7 @@ package com.holland.common.entity.gateway;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.holland.common.spring.AuthCheck;
+import com.holland.common.enums.gateway.RoleEnum;
 
 import java.util.Date;
 
@@ -16,11 +16,11 @@ public class UserRole {
 
     private Date update_time;
 
-    public AuthCheck.AuthCheckEnum[] parseRoles() {
+    public RoleEnum[] parseRoles() {
         final String[] split = roles.split(",");
-        final AuthCheck.AuthCheckEnum[] enums = new AuthCheck.AuthCheckEnum[split.length];
+        final RoleEnum[] enums = new RoleEnum[split.length];
         for (int i = 0; i < split.length; i++) {
-            enums[i] = AuthCheck.AuthCheckEnum.valueOf(split[i].toUpperCase());
+            enums[i] = RoleEnum.find(split[i]);
         }
         return enums;
     }

@@ -4,8 +4,8 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.holland.common.aggregate.CacheUser;
 import com.holland.common.entity.gateway.Code;
-import com.holland.common.entity.gateway.CodeTypeId;
-import com.holland.common.spring.AuthCheck;
+import com.holland.common.enums.gateway.CodeTypeEnum;
+import com.holland.common.enums.gateway.RoleEnum;
 import com.holland.common.spring.AuthCheckMapping;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.conf.NacosProp;
@@ -36,7 +36,7 @@ public class AuthCheckFilter {
         this.authCheckMapping = authCheckMapping;
 
         final FnCheck checkToken = (cacheUser, builder, authCheck, key) -> authCheck.stream()
-                .filter(v -> v.equals(AuthCheck.AuthCheckEnum.TOKEN))
+                .filter(v -> v.equals(RoleEnum.TOKEN))
                 .findAny()
                 .map(o -> {
                     if (cacheUser == null) {
@@ -50,7 +50,7 @@ public class AuthCheckFilter {
                 })
                 .orElse(null);
         final FnCheck checkKeyRole = (cacheUser, builder, authCheck, key) -> authCheck.stream()
-                .filter(v -> v.equals(AuthCheck.AuthCheckEnum.valueOf(key.toUpperCase())))
+                .filter(v -> v.equals(RoleEnum.find(key)))
                 .findAny()
                 .map(o -> {
                     if (cacheUser == null) {
@@ -71,7 +71,7 @@ public class AuthCheckFilter {
 
         checkHandler = new LinkedHashMap<>();
         checkHandler.put("token", checkToken);
-        for (Code code : codeMapper.getByCode_type_id(CodeTypeId.ROLE)) {
+        for (Code code : codeMapper.getByCode_type_id(CodeTypeEnum.ROLE)) {
             if (code.getVal1() == null) {
                 checkHandler.put(code.getVal(), checkKeyRole);
             } else {
@@ -86,7 +86,7 @@ public class AuthCheckFilter {
         return (exchange, chain) -> {
             final ServerHttpRequest request = exchange.getRequest();
             final String reqLine = request.getMethodValue() + " " + request.getURI().getRawPath();
-            final List<AuthCheck.AuthCheckEnum> enums = authCheckMapping.get(reqLine);
+            final List<RoleEnum> enums = authCheckMapping.get(reqLine);
             if (enums != null && enums.size() > 0) {
                 final StringBuilder builder;
                 final CacheUser cacheUser = RequestUtil.getCacheUser(request);
@@ -128,12 +128,12 @@ public class AuthCheckFilter {
         authCheckMapping.clear();
         return (k, v) -> {
             final String s = v.toString();
-            final List<AuthCheck.AuthCheckEnum> enums;
+            final List<RoleEnum> enums;
             if (s.isBlank()) {
                 enums = null;
             } else {
                 enums = Arrays.stream(s.split(","))
-                        .map(auth -> AuthCheck.AuthCheckEnum.valueOf(auth.toUpperCase()))
+                        .map(RoleEnum::find)
                         .collect(Collectors.toList());
             }
             authCheckMapping.put(k.toString(), enums);
@@ -141,7 +141,7 @@ public class AuthCheckFilter {
     }
 
     interface FnCheck {
-        HttpStatus apply(CacheUser cacheUser, StringBuilder builder, List<AuthCheck.AuthCheckEnum> authCheck, String key);
+        HttpStatus apply(CacheUser cacheUser, StringBuilder builder, List<RoleEnum> authCheck, String key);
     }
 
 }

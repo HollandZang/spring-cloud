@@ -1,11 +1,11 @@
 package com.holland.gateway.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.holland.common.aggregate.CacheUser;
 import com.holland.common.aggregate.LoginUser;
 import com.holland.common.entity.gateway.User;
 import com.holland.common.entity.gateway.UserRole;
+import com.holland.common.enums.gateway.RoleEnum;
 import com.holland.common.spring.AuthCheck;
 import com.holland.common.spring.apis.gateway.IUserController;
 import com.holland.common.utils.Response;
@@ -63,7 +63,7 @@ public class UserController implements IUserController {
             try (Lock lock = userCache.lock("login", user.getLogin_name())) {
                 if (!lock.isLocked())
                     return Mono.just(Response.later());
-                final User dbUser = userMapper.selectOne(new QueryWrapper<User>().eq("login_name", loginName));
+                final User dbUser = userMapper.getByLogin_name(loginName);
                 if (dbUser == null) {
 //                return Mono.just(Response.failed("用户不存在"));
                     return Mono.just(Response.failed("账号或密码错误"));
@@ -71,7 +71,7 @@ public class UserController implements IUserController {
                 if (encoder.matches(password, dbUser.getPassword())) {
                     userCache.delByLoginName(dbUser.getLogin_name());
 
-                    final UserRole userRole = userRoleMapper.selectOne(new QueryWrapper<UserRole>().eq("login_name", loginName));
+                    final UserRole userRole = userRoleMapper.getByLogin_name(loginName);
                     if (userRole != null && userRole.getRoles() != null)
                         dbUser.setRoles(userRole.getRoles());
 
@@ -103,7 +103,7 @@ public class UserController implements IUserController {
         Validator.test(user.getPassword(), "密码").notEmpty().maxLength(16);
 
         return Mono.defer(() -> {
-            final User dbUser = userMapper.selectOne(new QueryWrapper<User>().eq("login_name", user.getLogin_name()));
+            final User dbUser = userMapper.getByLogin_name(user.getLogin_name());
             if (dbUser != null)
                 return Mono.just(Response.existErr("账号"));
 
@@ -117,7 +117,7 @@ public class UserController implements IUserController {
         });
     }
 
-    @AuthCheck(values = AuthCheck.AuthCheckEnum.TOKEN)
+    @AuthCheck(values = RoleEnum.TOKEN)
     @Override
     public Mono<Response<Integer>> update(ServerHttpRequest request, @RequestBody User user) {
         Validator.test(user.getPassword(), "密码").maxLength(16);
