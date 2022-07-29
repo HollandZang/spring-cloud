@@ -29,6 +29,7 @@ public class EvalX {
     public Object exec(String expressions, JsonX jsonX) {
         if (expressions == null || expressions.isEmpty()) return null;
 
+        expressions = expressions.replaceAll(" +", "");
         final List<Triple> triples = getTriples(expressions, jsonX);
         if (triples.isEmpty()) {
             return setIt(expressions.toCharArray(), jsonX);
