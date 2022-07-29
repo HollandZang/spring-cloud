@@ -10,6 +10,7 @@ import com.holland.common.entity.gateway.LogLogin;
 import com.holland.common.entity.gateway.User;
 import com.holland.common.spring.AuthCheckMapping;
 import com.holland.gateway.common.RequestUtil;
+import com.holland.gateway.mapper.CodeMapper;
 import com.holland.gateway.swagger.SwaggerRouteFilter;
 import com.holland.gateway.swagger.SwaggerUtils;
 import com.holland.kafka.Producer;
@@ -59,6 +60,9 @@ public class CustomWebFilterChain {
     @Resource
     private AuthCheckMapping authCheckMapping;
 
+    @Resource
+    private CodeMapper codeMapper;
+
     private final Logger logger = LoggerFactory.getLogger(CustomWebFilterChain.class);
 
     @Bean
@@ -67,7 +71,9 @@ public class CustomWebFilterChain {
                 .addFilterAt(firstFilter(), SecurityWebFiltersOrder.FIRST)
                 .addFilterAt(SwaggerRouteFilter.getWebFilter(swaggerUtils), SecurityWebFiltersOrder.HTTP_HEADERS_WRITER)
 //                .addFilterAt(corsFilter(), SecurityWebFiltersOrder.CORS)
-                .addFilterAt(new AuthCheckFilter(authCheckMapping).filterByProperties(group, configService), SecurityWebFiltersOrder.AUTHENTICATION)
+                .addFilterAt(new AuthCheckFilter(authCheckMapping, codeMapper)
+                                .filterByProperties(group, configService)
+                        , SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAt(logFilter(), SecurityWebFiltersOrder.LAST)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable);
         return http.build();

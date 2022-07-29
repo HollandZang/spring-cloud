@@ -48,7 +48,7 @@ public class CodeController extends CommCache implements ICodeController {
         Validator.test(codeType.getId(), "ID").notEmpty().maxLength(4);
         Validator.test(codeType.getDes(), "描述").notEmpty().maxLength(256);
         return Mono.defer(() -> {
-            try (final Lock lock = r_lock(request, codeType.getId())) {
+            try (final Lock lock = redis.lock(CodeType.class, codeType.getId())) {
                 if (!lock.isLocked())
                     return Mono.just(Response.later());
 
@@ -66,8 +66,7 @@ public class CodeController extends CommCache implements ICodeController {
     public Mono<Response<List<Code>>> all(@PathVariable String type) {
         Validator.test(type, "类别代码").notEmpty();
         return Mono.defer(() -> {
-            final List<Code> codes = r_getOrReassign(() -> codeMapper.selectList(new QueryWrapper<Code>()
-                            .eq("code_type_id", type))
+            final List<Code> codes = r_getOrReassign(() -> codeMapper.getByCode_type_id(type)
                     , "code", type);
             return Mono.just(Response.success(codes));
         });
@@ -76,10 +75,11 @@ public class CodeController extends CommCache implements ICodeController {
     @Override
     public Mono<Response<Integer>> add(ServerHttpRequest request, @RequestBody Code code) {
         Validator.test(code.getVal(), "值").notEmpty().maxLength(256);
+        Validator.test(code.getVal(), "值1").notEmpty().maxLength(1024);
         Validator.test(code.getCode_type_id(), "类别代码").notEmpty().maxLength(4);
         Validator.test(code.getDes(), "描述").notEmpty().maxLength(256);
         return Mono.defer(() -> {
-            try (final Lock lock = r_lock(request, code.getCode_type_id())) {
+            try (final Lock lock = redis.lock(Code.class, code.getCode_type_id())) {
                 if (!lock.isLocked())
                     return Mono.just(Response.later());
                 final Code find = codeMapper.selectOne(new QueryWrapper<Code>()

@@ -13,11 +13,13 @@ public class Code implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    private String val;
-
     private String code_type_id;
 
     private String des;
+
+    private String val;
+
+    private String val1;
 
     private static final long serialVersionUID = 1L;
 
@@ -27,15 +29,6 @@ public class Code implements Serializable {
 
     public Code setId(Integer id) {
         this.id = id;
-        return this;
-    }
-
-    public String getVal() {
-        return val;
-    }
-
-    public Code setVal(String val) {
-        this.val = val;
         return this;
     }
 
@@ -54,6 +47,24 @@ public class Code implements Serializable {
 
     public Code setDes(String des) {
         this.des = des;
+        return this;
+    }
+
+    public String getVal() {
+        return val;
+    }
+
+    public Code setVal(String val) {
+        this.val = val;
+        return this;
+    }
+
+    public String getVal1() {
+        return val1;
+    }
+
+    public Code setVal1(String val1) {
+        this.val1 = val1;
         return this;
     }
 }

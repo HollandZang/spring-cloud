@@ -4,7 +4,10 @@ package com.holland.redis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 public class Redis {
@@ -25,6 +28,17 @@ public class Redis {
         final T apply = action.apply(jedis);
         jedisPool.returnResource(jedis);
         return apply;
+    }
+
+    public Lock lock(Class<?> clazz, String... keys) {
+        return lock(-1, clazz, keys);
+    }
+
+    public Lock lock(int seconds, Class<?> clazz, String... keys) {
+        final List<String> list = new ArrayList<>();
+        list.add(clazz.getSimpleName());
+        Collections.addAll(list, keys);
+        return lock(seconds, list.toArray(String[]::new));
     }
 
     public Lock lock(String... lockName) {

@@ -1,9 +1,10 @@
 CREATE TABLE `spring-cloud_gateway`.code
 (
     `id`           int auto_increment primary key,
-    `val`          varchar(256) NOT NULL,
     `code_type_id` char(4)      NOT NULL,
     `des`          varchar(256) NULL DEFAULT NULL,
+    `val`          varchar(256) NOT NULL,
+    `val1`          varchar(1024) NOT NULL,
     INDEX          `IDX_TYPE_ID`(`code_type_id`) USING BTREE
 );
 
