@@ -12,13 +12,14 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Map;
 
 @Api(tags = "用户模块")
 @RequestMapping("/user")
 public interface IUserController {
     @ApiOperation("获取用户列表")
-    @GetMapping("/list")
-    Mono<Response<List<User>>> list(@RequestBody Page<User> page);
+    @PostMapping("/list")
+    Mono<Response<List<Map<String, Object>>>> list(@RequestBody Page<Map<String, Object>> page);
 
     @ApiOperation("登录")
     @PostMapping("/login")

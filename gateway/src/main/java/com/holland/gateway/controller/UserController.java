@@ -1,5 +1,6 @@
 package com.holland.gateway.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.holland.common.aggregate.CacheUser;
 import com.holland.common.aggregate.LoginUser;
@@ -26,6 +27,7 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class UserController implements IUserController {
@@ -44,12 +46,10 @@ public class UserController implements IUserController {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(8);
 
     @Override
-    public Mono<Response<List<User>>> list(@RequestBody Page<User> page) {
-        final Page<User> userPage = userMapper.selectPage(page, null);
-        for (User user : userPage.getRecords()) {
-            user.setPassword(null);
-        }
-        return Mono.defer(() -> Mono.just(Response.success(userPage)));
+    public Mono<Response<List<Map<String, Object>>>> list(@RequestBody Page<Map<String, Object>> page) {
+        final Page<Map<String, Object>> records = userMapper.selectMapsPage(page, new QueryWrapper<User>()
+                .select("login_name", "create_time", "update_time"));
+        return Mono.defer(() -> Mono.just(Response.success(records)));
     }
 
     @Override
