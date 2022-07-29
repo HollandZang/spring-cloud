@@ -108,8 +108,8 @@ public class JsonX {
                     continue;
                 }
                 if (c == ']') {
-                    if (action.length() == 0) throw new RuntimeException();
-                    if (!arrFlag) throw new RuntimeException();
+                    if (action.length() == 0) throw new RuntimeException(String.valueOf(i));
+                    if (!arrFlag) throw new RuntimeException(String.valueOf(i));
                     final String index = action.toString();
                     arrFlag = false;
                     actions.add(supplierArr);
@@ -120,9 +120,9 @@ public class JsonX {
                 if (c == '.') {
                     if (action.length() == 0) {
                         if (chars[i - 1] == ']') continue;
-                        throw new RuntimeException();
+                        throw new RuntimeException(String.valueOf(i));
                     }
-                    if (arrFlag) throw new RuntimeException();
+                    if (arrFlag) throw new RuntimeException(String.valueOf(i));
                     actions.add(supplierObj);
                     list.add(action.toString());
                     action.delete(0, action.length());
@@ -130,7 +130,7 @@ public class JsonX {
                 }
                 action.append(c);
                 if (i == chars.length - 1) {
-                    if (arrFlag) throw new RuntimeException();
+                    if (arrFlag) throw new RuntimeException(String.valueOf(i));
                     actions.add(supplierObj);
                     list.add(action.toString());
                 }
