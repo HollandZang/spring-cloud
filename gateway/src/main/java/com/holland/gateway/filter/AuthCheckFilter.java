@@ -140,6 +140,7 @@ public class AuthCheckFilter {
         };
     }
 
+    @FunctionalInterface
     interface FnCheck {
         HttpStatus apply(CacheUser cacheUser, StringBuilder builder, List<RoleEnum> authCheck, String key);
     }
