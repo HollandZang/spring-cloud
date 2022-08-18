@@ -19,20 +19,30 @@ public class JsonX {
 
     public final JSON resource;
 
-    public JsonX(String resource) {
-        this.resource = (JSON) JSON.parse(resource);
-    }
-
-    public JsonX(JSON resource) {
-        this.resource = resource;
+    public JsonX(Object resource) {
+        if (resource instanceof JSON) this.resource = (JSON) resource;
+        else if (resource instanceof String) this.resource = (JSON) JSON.parse((String) resource);
+        else this.resource = (JSON) JSON.toJSON(resource);
     }
 
     public <T> T find(String expression) {
         return new Block(expression).parseActions(resource);
     }
 
+    enum Types {
+        i32, i,
+        i64,
+        f32, f,
+        f64, d,
+        bool, b,
+        chr, c,
+        str, s,
+        list, l,
+        map, m,
+    }
+
     static class Block {
-        public final CommX.Types type;
+        public final Types type;
         public final String word;
 
         Block(String s) {
@@ -41,7 +51,7 @@ public class JsonX {
                 this.type = null;
                 this.word = pair[0];
             } else {
-                this.type = CommX.Types.valueOf(pair[0]);
+                this.type = Types.valueOf(pair[0]);
                 this.word = pair[1];
             }
         }

@@ -16,7 +16,7 @@ public class EvalX {
         final JSON json = (JSON) JSON.parse("{a:1,data:[{uid:\"157580\",activeCid:\"69\",activeChannel:\"kuaikan\",activeGid:\"1000\",activeIP:\"2882823743\",channelUid:\"91627840_3\",status:\"0\"}]}");
         final JsonX jsonX = new JsonX(json);
 
-        final String expressions = "1==1||2!=3";
+        final String expressions = "1==1 && s'data[0]uid=='157580'";
 
         final Object exec = new EvalX().exec(expressions, jsonX);
         System.out.println(exec);
