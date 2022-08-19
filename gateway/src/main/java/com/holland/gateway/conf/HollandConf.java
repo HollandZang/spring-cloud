@@ -86,7 +86,6 @@ public class HollandConf {
         return WebClient.builder();
     }
 
-
     @Bean
     public AuthCheckMapping authCheckMapping() {
         final Map<RequestMappingInfo, HandlerMethod> handlerMethods = requestMappingHandlerMapping.getHandlerMethods();
