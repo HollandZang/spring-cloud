@@ -10,7 +10,7 @@ import com.holland.common.enums.gateway.RoleEnum;
 import com.holland.common.spring.AuthCheck;
 import com.holland.common.spring.apis.gateway.IUserController;
 import com.holland.common.utils.Response;
-import com.holland.common.utils.Validator;
+import com.holland.common.utils.ValidatorMysql;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.common.UserCache;
 import com.holland.gateway.mapper.UserMapper;
@@ -56,8 +56,8 @@ public class UserController implements IUserController {
     public Mono<Response<LoginUser>> login(@RequestBody User user) {
         final String loginName = user.getLogin_name();
         final String password = user.getPassword();
-        Validator.test(user.getLogin_name(), "用户名").notEmpty().minLength(8).maxLength(16);
-        Validator.test(user.getPassword(), "密码").notEmpty().maxLength(16);
+        new ValidatorMysql(user.getLogin_name(), "用户名").notEmpty().lenGE(8).lenLT(16);
+        new ValidatorMysql(user.getPassword(), "密码").notEmpty().lenLT(16);
 
         return Mono.defer(() -> {
             try (Lock lock = userCache.lock("login", user.getLogin_name())) {
@@ -99,8 +99,8 @@ public class UserController implements IUserController {
 
     @Override
     public Mono<Response<Integer>> add(@RequestBody User user) {
-        Validator.test(user.getLogin_name(), "用户名").notEmpty().minLength(8).maxLength(16);
-        Validator.test(user.getPassword(), "密码").notEmpty().maxLength(16);
+        new ValidatorMysql(user.getLogin_name(), "用户名").notEmpty().lenGE(8).lenLT(16);
+        new ValidatorMysql(user.getPassword(), "密码").notEmpty().lenLT(16);
 
         return Mono.defer(() -> {
             final User dbUser = userMapper.getByLogin_name(user.getLogin_name());
@@ -120,8 +120,8 @@ public class UserController implements IUserController {
     @AuthCheck(values = RoleEnum.TOKEN)
     @Override
     public Mono<Response<Integer>> update(ServerHttpRequest request, @RequestBody User user) {
-        Validator.test(user.getPassword(), "密码").maxLength(16);
-        Validator.test(user.getRoles(), "角色").maxLength(256);
+        new ValidatorMysql(user.getPassword(), "密码").lenLT(16);
+        new ValidatorMysql(user.getRoles(), "角色").lenLT(256);
 
         final CacheUser cacheUser = RequestUtil.getCacheUser(request);
         if (cacheUser == null)

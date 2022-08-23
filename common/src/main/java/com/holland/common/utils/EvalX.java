@@ -16,35 +16,35 @@ public class EvalX {
         final JSON json = (JSON) JSON.parse("{a:1,data:[{uid:\"157580\",activeCid:\"69\",activeChannel:\"kuaikan\",activeGid:\"1000\",activeIP:\"2882823743\",channelUid:\"91627840_3\",status:\"0\"}]}");
         final JsonX jsonX = new JsonX(json);
 
-        final String expressions = "1==1 && s'data[0]uid=='157580'";
+        final String expressions = "1==1 && s'data[0]uid=='157580' && 1==2";
 
         final Object exec = new EvalX().exec(expressions, jsonX);
         System.out.println(exec);
     }
 
-    public Object exec(String expressions) {
+    public <T> T exec(String expressions) {
         return exec(expressions, null);
     }
 
-    public Object exec(String expressions, JsonX jsonX) {
+    public <T> T exec(String expressions, JsonX jsonX) {
         if (expressions == null || expressions.isEmpty()) return null;
 
         expressions = expressions.replaceAll(" +", "");
         final List<Triple> triples = getTriples(expressions, jsonX);
         if (triples.isEmpty()) {
-            return setIt(expressions.toCharArray(), jsonX);
+            return (T) setIt(expressions.toCharArray(), jsonX);
         }
-        System.out.println(triples);
+//        System.out.println(triples);
         Object val = getVal(triples);
-        System.out.println(val);
-        return val;
+//        System.out.println(val);
+        return (T) val;
     }
 
     private List<Triple> getTriples(String expressions, JsonX jsonX) {
         final String reg = Arrays.stream(Keywords.values())
                 .map(keywords -> keywords.reg)
                 .collect(Collectors.joining("|"));
-        System.out.println(reg);
+//        System.out.println(reg);
         final Pattern pattern = Pattern.compile(reg);
         final Matcher matcher = pattern.matcher(expressions);
         int i = 0;
