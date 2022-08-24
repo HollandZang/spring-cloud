@@ -3,7 +3,6 @@ package com.holland.common.entity.gateway;
 import com.holland.common.utils.DateUtil;
 
 import java.io.Serializable;
-import java.util.Date;
 
 public class Log implements Serializable {
     private String operateUser;
@@ -43,8 +42,7 @@ public class Log implements Serializable {
 
     public Log setTimestamp(long timestamp) {
         this.timestamp = timestamp;
-        final Date d = new Date(timestamp);
-        this.date = DateUtil.getDateStr(d);
+        this.date = DateUtil.toStr(timestamp, "yyyyMMddHHmmss");
         return this;
     }
 
