@@ -228,7 +228,7 @@ public class EvalX {
             BiFunction<Object, Object, Object> getAction(Object... args) {
                 return (a, b) -> towNumberOp(a, b, () ->
                         BigDecimal.valueOf(((Number) a).doubleValue())
-                                .min(BigDecimal.valueOf(((Number) b).doubleValue()))
+                                .subtract(BigDecimal.valueOf(((Number) b).doubleValue()))
                                 .doubleValue());
             }
         },
