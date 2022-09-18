@@ -40,7 +40,7 @@ public class UserCache {
         final List<String> list = new ArrayList<>();
         list.add("user");
         list.addAll(Arrays.asList(lockName));
-        return redis.lock(list.toArray(String[]::new));
+        return redis.lock(list.toArray(new String[0]));
     }
 
     public String cache(User user) {

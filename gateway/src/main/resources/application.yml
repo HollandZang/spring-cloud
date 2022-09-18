@@ -13,7 +13,7 @@ spring:
     name: gateway
   profiles:
     active: dev
-    include: admin
+#    include: admin
   cloud:
     gateway:
       discovery:

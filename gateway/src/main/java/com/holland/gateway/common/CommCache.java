@@ -26,7 +26,7 @@ public class CommCache {
         final List<String> list = new ArrayList<>();
         list.add(RequestUtil.getReqLine(request));
         Collections.addAll(list, keys);
-        return redis.lock(list.toArray(String[]::new));
+        return redis.lock(list.toArray(new String[0]));
     }
 
     public <T> T r_getOrReassign(Supplier<T> supplier, String... key) {

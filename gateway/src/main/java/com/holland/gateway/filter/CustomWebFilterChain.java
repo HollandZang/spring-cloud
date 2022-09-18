@@ -2,7 +2,6 @@ package com.holland.gateway.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.holland.common.aggregate.CacheUser;
 import com.holland.common.entity.gateway.Log;
@@ -48,8 +47,6 @@ import java.util.Map;
 public class CustomWebFilterChain {
     @Value("${spring.cloud.nacos.config.group}")
     private String group;
-    @Resource
-    private ConfigService configService;
 
     @Resource
     private SwaggerUtils swaggerUtils;
@@ -72,7 +69,7 @@ public class CustomWebFilterChain {
                 .addFilterAt(SwaggerRouteFilter.getWebFilter(swaggerUtils), SecurityWebFiltersOrder.HTTP_HEADERS_WRITER)
 //                .addFilterAt(corsFilter(), SecurityWebFiltersOrder.CORS)
                 .addFilterAt(new AuthCheckFilter(authCheckMapping, codeMapper)
-                                .filterByProperties(group, configService)
+                                .filterByProperties(group)
                         , SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAt(logFilter(), SecurityWebFiltersOrder.LAST)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable);

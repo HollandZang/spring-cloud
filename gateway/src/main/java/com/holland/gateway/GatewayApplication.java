@@ -1,5 +1,7 @@
 package com.holland.gateway;
 
+import com.holland.gateway.conf.NacosProp;
+import com.holland.nacos.conf.NacosPropKit;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,6 +15,7 @@ import reactivefeign.spring.config.EnableReactiveFeignClients;
 public class GatewayApplication {
 
     public static void main(String[] args) {
+        NacosPropKit.setInstance(NacosProp.class);
         SpringApplication.run(GatewayApplication.class, args);
     }
 

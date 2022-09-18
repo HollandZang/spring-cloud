@@ -13,7 +13,7 @@ public class ValidatorMysql implements Validator {
 
     @Override
     public Validator notEmpty() {
-        if (field == null || field.toString().isBlank()) {
+        if (field == null || field.toString().isEmpty()) {
             ParameterException.accept("字段[%s]不能为空", fieldName);
         }
         return this;

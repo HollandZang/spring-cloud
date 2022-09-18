@@ -12,7 +12,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: localhost.vm:8848
+        server-addr: 114.115.212.83:8848
 eureka:
   instance:
     prefer-ip-address: true

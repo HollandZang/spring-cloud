@@ -19,7 +19,7 @@ public class Consumer {
         list.add("TEST_TOPIC");
         list.add("login_log");
         list.add("op_log");
-        final Consumer c = new Consumer("localhost.vm:9092", "g-3", list);
+        final Consumer c = new Consumer("114.115.212.83:9092", "g-3", list);
         c.runOnThread(record -> System.out.printf("topic=%s, offset=%s, value=%s\n", record.topic(), record.offset(), record.value()));
         Thread.sleep(10000);
         System.exit(0);

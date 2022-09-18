@@ -1,9 +1,6 @@
 package com.holland.gateway.conf;
 
 import com.alibaba.cloud.commons.lang.StringUtils;
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.exception.NacosException;
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
@@ -27,39 +24,21 @@ import org.springframework.web.reactive.result.method.annotation.RequestMappingH
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Import(GlobalExceptionHandle.class)
 @Configuration
 public class HollandConf {
-
-    @Value("${spring.cloud.nacos.config.server-addr}")
-    private String serverAddr;
-    @Value("${spring.cloud.nacos.config.group}")
-    private String group;
-    @Value("${spring.cloud.nacos.config.namespace}")
-    private String namespace;
-
     @Resource
     private UserCache userCache;
 
     @Resource(name = "requestMappingHandlerMapping")
     private RequestMappingHandlerMapping requestMappingHandlerMapping;
 
-    private ConfigService configService;
-
     @PostConstruct
-    public void init() throws NacosException, IOException, IllegalAccessException {
-        final Properties properties = new Properties();
-        properties.put("serverAddr", serverAddr);
-        properties.put("namespace", namespace);
-        configService = NacosFactory.createConfigService(properties);
-        NacosProp.load(configService, group);
-
+    public void init() {
         RequestUtil.init(userCache);
     }
 
@@ -69,10 +48,6 @@ public class HollandConf {
         return new Redis(host, port);
     }
 
-    @Bean
-    public ConfigService configService() {
-        return configService;
-    }
 
     @LoadBalanced
     @Bean

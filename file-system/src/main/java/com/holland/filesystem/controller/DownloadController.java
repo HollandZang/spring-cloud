@@ -19,6 +19,7 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 @Api(tags = "文件下载模块")
@@ -32,15 +33,14 @@ public class DownloadController {
     @ApiOperation(value = "获取安卓h5页面当前版本信息")
     @GetMapping("/android/web/version")
     public Mono<ResponseEntity<?>> androidWebVersion() {
-        GridFSFile gridFile = operations.find(Query.query(Criteria
-                .where("filename").is("androidWeb")
-        )).sort(new Document("uploadDate", -1)).limit(1)
+        final GridFSFile gridFile = operations.find(Query.query(Criteria
+                        .where("filename").is("androidWeb")
+                )).sort(new Document("uploadDate", -1)).limit(1)
                 .first();
-        return Mono.defer(() -> Mono.just(
-                Map.of(
-                        "objectId", gridFile == null ? "" : gridFile.getObjectId().toString(),
-                        "updateTime", gridFile == null ? "" : gridFile.getUploadDate()
-                )))
+        final Map<String, Object> map = new HashMap<>();
+        map.put("objectId", gridFile == null ? "" : gridFile.getObjectId().toString());
+        map.put("updateTime", gridFile == null ? "" : gridFile.getUploadDate());
+        return Mono.defer(() -> Mono.just(map))
                 .map(it -> ResponseEntity.ok().body(it));
     }
 
@@ -52,7 +52,7 @@ public class DownloadController {
             return Mono.defer(() -> Mono.just(
                     ResponseEntity.ok()
                             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + objectId)
-                            .body(new InputStreamResource(InputStream.nullInputStream()))));
+                            .body(null)));
         }
 
         final GridFsResource resource = operations.getResource(gridFile);

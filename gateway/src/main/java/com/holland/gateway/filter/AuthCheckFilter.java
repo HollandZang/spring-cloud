@@ -1,6 +1,5 @@
 package com.holland.gateway.filter;
 
-import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.holland.common.aggregate.CacheUser;
 import com.holland.common.entity.gateway.Code;
@@ -10,6 +9,8 @@ import com.holland.common.spring.AuthCheckMapping;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.conf.NacosProp;
 import com.holland.gateway.mapper.CodeMapper;
+import com.holland.nacos.conf.NacosEnvironmentPostProcessor;
+import com.holland.nacos.conf.NacosPropKit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -116,11 +117,11 @@ public class AuthCheckFilter {
         };
     }
 
-    public WebFilter filterByProperties(String group, ConfigService configService) throws NacosException {
+    public WebFilter filterByProperties(String group) throws NacosException {
         checkByAnnotation = false;
         final BiConsumer<Object, Object> authCheckMappingByNacos = setAuthCheckMappingByNacos(authCheckMapping);
         NacosProp.gateway_router.forEach(authCheckMappingByNacos);
-        NacosProp.listen(configService, group, "gateway_router", properties -> properties.forEach(authCheckMappingByNacos));
+        NacosPropKit.listen(NacosEnvironmentPostProcessor.configService, group, "gateway_router", properties -> properties.forEach(authCheckMappingByNacos));
         return filterByAnnotation();
     }
 
@@ -129,7 +130,7 @@ public class AuthCheckFilter {
         return (k, v) -> {
             final String s = v.toString();
             final List<RoleEnum> enums;
-            if (s.isBlank()) {
+            if (s.isEmpty()) {
                 enums = null;
             } else {
                 enums = Arrays.stream(s.split(","))
