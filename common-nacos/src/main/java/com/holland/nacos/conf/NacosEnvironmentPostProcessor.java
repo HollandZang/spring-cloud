@@ -12,32 +12,47 @@ import org.springframework.lang.Nullable;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 public class NacosEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
-    public static ConfigService configService;
+    public static Map<String, ConfigService> configServiceMap;
+    public static Set<NacosConfPo> nacosConfPos;
+    private String serverAddr;
 
-    private void init(ConfigurableEnvironment environment) throws NacosException, IOException, IllegalAccessException {
-        final Properties properties = new Properties();
-        properties.put("serverAddr", environment.getProperty("spring.cloud.nacos.config.server-addr"));
-        properties.put("namespace", environment.getProperty("spring.cloud.nacos.config.namespace"));
-        configService = NacosFactory.createConfigService(properties);
-        NacosPropKit.init(configService, environment.getProperty("spring.cloud.nacos.config.group"));
+    private void init(Set<NacosConfPo> nacosConfPos) throws NacosException, IOException, IllegalAccessException {
+        configServiceMap = new HashMap<>(nacosConfPos.size());
+        for (NacosConfPo po : nacosConfPos) {
+            if (!configServiceMap.containsKey(po.namespace)) {
+                final Properties properties = new Properties();
+                properties.put("serverAddr", serverAddr);
+                properties.put("namespace", po.namespace);
+                ConfigService configService = NacosFactory.createConfigService(properties);
+                configServiceMap.put(po.namespace, configService);
+            }
+        }
+        NacosPropKit.init(configServiceMap, nacosConfPos);
     }
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        serverAddr = environment.getProperty("spring.cloud.nacos.config.server-addr");
+        String namespace = environment.getProperty("spring.cloud.nacos.config.namespace");
+        String group = environment.getProperty("spring.cloud.nacos.config.group");
+        nacosConfPos = NacosConfPo.genConfigs(namespace, group);
+
         try {
-            init(environment);
+            init(nacosConfPos);
         } catch (NacosException | IOException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
 
         MutablePropertySources propertySources = environment.getPropertySources();
-        for (Field field : NacosPropKit.INSTANCE.getDeclaredFields()) {
-            if (!Modifier.isPublic(field.getModifiers())) continue;
+        for (NacosConfPo po : nacosConfPos) {
+            Field field = po.field;
 
             Properties o;
             try {
@@ -46,7 +61,7 @@ public class NacosEnvironmentPostProcessor implements EnvironmentPostProcessor {
                 throw new RuntimeException(e);
             }
 
-            propertySources.addFirst(new PropertySource<Properties>(field.getName(), o) {
+            propertySources.addFirst(new PropertySource<Properties>(po.toString(), o) {
                 @Override
                 public Object getProperty(@Nullable String name) {
                     return this.source.getProperty(name);

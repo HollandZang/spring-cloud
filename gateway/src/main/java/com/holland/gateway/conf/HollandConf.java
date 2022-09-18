@@ -66,6 +66,7 @@ public class HollandConf {
         final Map<RequestMappingInfo, HandlerMethod> handlerMethods = requestMappingHandlerMapping.getHandlerMethods();
         final AuthCheckMapping authCheckMapping = new AuthCheckMapping(handlerMethods.size());
         handlerMethods.forEach(((requestMappingInfo, handlerMethod) -> {
+            //noinspection OptionalGetWithoutIsPresent
             final String name = requestMappingInfo.getMethodsCondition().getMethods().stream().findFirst().get()
                     + " " +
                     requestMappingInfo.getPatternsCondition().getDirectPaths().stream().filter(StringUtils::isNotBlank).findFirst().orElse("/");

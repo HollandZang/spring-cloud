@@ -11,8 +11,7 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 
 /**
- * 官方推荐用ModifyRequestBodyGatewayFilterFactory来获取body
- * https://cloud.spring.io/spring-cloud-gateway/multi/multi__gatewayfilter_factories.html
+ * <a href="https://cloud.spring.io/spring-cloud-gateway/multi/multi__gatewayfilter_factories.html">官方推荐用ModifyRequestBodyGatewayFilterFactory来获取body</a>
  */
 //@Component
 public class CacheRequestBodyFilter implements GlobalFilter, Ordered {

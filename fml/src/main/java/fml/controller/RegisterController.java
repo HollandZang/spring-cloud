@@ -108,6 +108,6 @@ public class RegisterController {
     }
 
     private enum LifecycleEnum {
-        session, all;
+        session, all
     }
 }

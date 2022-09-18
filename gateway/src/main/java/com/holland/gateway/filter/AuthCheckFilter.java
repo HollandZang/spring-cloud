@@ -9,7 +9,6 @@ import com.holland.common.spring.AuthCheckMapping;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.conf.NacosProp;
 import com.holland.gateway.mapper.CodeMapper;
-import com.holland.nacos.conf.NacosEnvironmentPostProcessor;
 import com.holland.nacos.conf.NacosPropKit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,11 +60,11 @@ public class AuthCheckFilter {
                     }
                     if (cacheUser.getRoles() == null || !cacheUser.getRoles().contains(key)) {
                         if (logger.isDebugEnabled())
-                            builder.append(", check " + key + "=ERR");
+                            builder.append(", check ").append(key).append("=ERR");
                         return HttpStatus.FORBIDDEN;
                     }
                     if (logger.isDebugEnabled())
-                        builder.append(", check " + key + "=OK");
+                        builder.append(", check ").append(key).append("=OK");
                     return null;
                 })
                 .orElse(null);
@@ -105,23 +104,29 @@ public class AuthCheckFilter {
                     final HttpStatus httpStatus = fnCheck.apply(cacheUser, builder, enums, key);
                     if (httpStatus != null) {
                         if (logger.isDebugEnabled())
+                            //noinspection ConstantConditions
                             logger.debug(builder.toString());
                         originalResponse.setStatusCode(httpStatus);
                         return originalResponse.setComplete();
                     }
                 }
                 if (logger.isDebugEnabled())
+                    //noinspection ConstantConditions
                     logger.trace(builder.toString());
             }
             return chain.filter(exchange);
         };
     }
 
-    public WebFilter filterByProperties(String group) throws NacosException {
+    public WebFilter filterByProperties() {
         checkByAnnotation = false;
         final BiConsumer<Object, Object> authCheckMappingByNacos = setAuthCheckMappingByNacos(authCheckMapping);
         NacosProp.gateway_router.forEach(authCheckMappingByNacos);
-        NacosPropKit.listen(NacosEnvironmentPostProcessor.configService, group, "gateway_router", properties -> properties.forEach(authCheckMappingByNacos));
+        try {
+            NacosPropKit.listen("gateway_router", properties -> properties.forEach(authCheckMappingByNacos));
+        } catch (NacosException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
         return filterByAnnotation();
     }
 

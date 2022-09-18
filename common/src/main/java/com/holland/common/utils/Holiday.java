@@ -38,6 +38,7 @@ public class Holiday {
                             try {
                                 String pre = "/**/op_aladdin_callback" + l + "(";
                                 String end = ");";
+                                //noinspection ConstantConditions
                                 String string = response.body().string();
                                 string = string.substring(pre.length(), string.length() - end.length());
 
@@ -46,6 +47,7 @@ public class Holiday {
                                 for (Object obj : arr) {
                                     JsonX json = new JsonX(obj);
                                     if (new EvalX().exec("status=='1'", json)) {
+                                        //noinspection MalformedFormatString
                                         String key = json.find("year")
                                                 + String.format("%02d", (Object) json.find("i'month"))
                                                 + String.format("%02d", (Object) json.find("i'day"));

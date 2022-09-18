@@ -2,7 +2,6 @@ package com.holland.gateway.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.nacos.api.exception.NacosException;
 import com.holland.common.aggregate.CacheUser;
 import com.holland.common.entity.gateway.Log;
 import com.holland.common.entity.gateway.LogLogin;
@@ -18,7 +17,6 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -45,8 +43,6 @@ import java.util.Map;
 @Configuration
 @EnableWebFluxSecurity
 public class CustomWebFilterChain {
-    @Value("${spring.cloud.nacos.config.group}")
-    private String group;
 
     @Resource
     private SwaggerUtils swaggerUtils;
@@ -63,13 +59,13 @@ public class CustomWebFilterChain {
     private final Logger logger = LoggerFactory.getLogger(CustomWebFilterChain.class);
 
     @Bean
-    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) throws NacosException {
+    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
                 .addFilterAt(firstFilter(), SecurityWebFiltersOrder.FIRST)
                 .addFilterAt(SwaggerRouteFilter.getWebFilter(swaggerUtils), SecurityWebFiltersOrder.HTTP_HEADERS_WRITER)
 //                .addFilterAt(corsFilter(), SecurityWebFiltersOrder.CORS)
                 .addFilterAt(new AuthCheckFilter(authCheckMapping, codeMapper)
-                                .filterByProperties(group)
+                                .filterByProperties()
                         , SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAt(logFilter(), SecurityWebFiltersOrder.LAST)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable);
@@ -88,6 +84,7 @@ public class CustomWebFilterChain {
         return (exchange, chain) -> {
             final ServerHttpResponse originalResponse = exchange.getResponse();
             final ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(originalResponse) {
+                @SuppressWarnings("NullableProblems")
                 @Override
                 public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
                     //修改header
@@ -123,6 +120,7 @@ public class CustomWebFilterChain {
             final ServerHttpRequestDecorator serverHttpRequestDecorator;
             if (requestBody != null) {
                 serverHttpRequestDecorator = new ServerHttpRequestDecorator(request) {
+                    @SuppressWarnings("NullableProblems")
                     @Override
                     public Flux<DataBuffer> getBody() {
                         final NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(new UnpooledByteBufAllocator(false));
@@ -134,30 +132,32 @@ public class CustomWebFilterChain {
 
             final ServerHttpResponse originalResponse = exchange.getResponse();
             final ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(originalResponse) {
+                @SuppressWarnings("NullableProblems")
                 @Override
                 public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
                     //输出返回结果
                     if (body instanceof Flux || body instanceof Mono) {
-                        final Mono<Void> newMono = super.writeWith(
+                        return super.writeWith(
                                 DataBufferUtils.join(body)
                                         .doOnNext(dataBuffer -> {
                                             final String respBody = dataBuffer.toString(StandardCharsets.UTF_8);
+                                            final HttpStatus statusCode = originalResponse.getStatusCode();
+                                            final int result = statusCode == null ? -1 : statusCode.value();
                                             //输出body
-                                            logger.debug(request.getId() + " Response : status = {}, body = {}", exchange.getResponse().getStatusCode().toString(), respBody);
+                                            logger.debug(request.getId() + " Response : status = {}, body = {}", result, respBody);
 
                                             switch (request.getURI().getRawPath()) {
                                                 case "/user/login":
-                                                    logLogin(request, originalResponse.getStatusCode(), respBody, requestBody);
+                                                    logLogin(request, result, respBody, requestBody);
                                                     break;
                                                 case "/user/logout":
-                                                    logLogout(request, originalResponse.getStatusCode(), respBody);
+                                                    logLogout(request, result, respBody);
                                                     break;
                                                 default:
-                                                    log(request, originalResponse.getStatusCode(), respBody, requestBody);
+                                                    log(request, result, respBody, requestBody);
                                             }
                                         })
                         );
-                        return newMono;
                     }
                     return super.writeWith(body);
                 }
@@ -172,12 +172,11 @@ public class CustomWebFilterChain {
         };
     }
 
-    private void log(ServerHttpRequest request, HttpStatus statusCode, String respBody, String requestBody) {
+    private void log(ServerHttpRequest request, int statusCode, String respBody, String requestBody) {
         final CacheUser cacheUser = RequestUtil.getCacheUser(request);
         final String loginName = cacheUser == null ? null : cacheUser.getLogin_name();
         final String reqLine = request.getMethodValue() + " " + request.getURI().getRawPath();
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
-        final int result = statusCode.value();
         final Map<String, String> m = request.getQueryParams().toSingleValueMap();
         final String queryParam = m.isEmpty() ? null : JSONObject.toJSONString(m);
 
@@ -188,7 +187,7 @@ public class CustomWebFilterChain {
                 .setBody(requestBody)
                 .setParam(queryParam)
                 .setIp(ip)
-                .setResCode(result)
+                .setResCode(statusCode)
                 .setResData(respBody);
 
         try {
@@ -198,11 +197,10 @@ public class CustomWebFilterChain {
         }
     }
 
-    private void logLogin(ServerHttpRequest request, HttpStatus statusCode, String respBody, String requestBody) {
+    private void logLogin(ServerHttpRequest request, int statusCode, String respBody, String requestBody) {
         final String from = request.getHeaders().getFirst("User-Agent");
         final String loginName = JSONObject.parseObject(requestBody, User.class).getLogin_name();
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
-        final int result = statusCode.value();
 
         final LogLogin logLogin = new LogLogin()
                 .setLoginName(loginName)
@@ -211,7 +209,7 @@ public class CustomWebFilterChain {
                 .setActionType("login")
                 .setFrom(from)
                 .setIp(ip)
-                .setResCode(result)
+                .setResCode(statusCode)
                 .setResBody(respBody);
 
         try {
@@ -221,18 +219,17 @@ public class CustomWebFilterChain {
         }
     }
 
-    private void logLogout(ServerHttpRequest request, HttpStatus statusCode, String respBody) {
+    private void logLogout(ServerHttpRequest request, int statusCode, String respBody) {
         final CacheUser cacheUser = RequestUtil.getCacheUser(request);
         final String loginName = cacheUser == null ? null : cacheUser.getLogin_name();
         final String ip = request.getRemoteAddress() == null ? null : request.getRemoteAddress().toString();
-        final int result = statusCode.value();
 
         final LogLogin logLogin = new LogLogin()
                 .setLoginName(loginName)
                 .setTimestamp(System.currentTimeMillis())
                 .setActionType("logout")
                 .setIp(ip)
-                .setResCode(result)
+                .setResCode(statusCode)
                 .setResBody(respBody);
 
         try {

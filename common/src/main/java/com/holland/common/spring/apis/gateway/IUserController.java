@@ -8,7 +8,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -26,7 +29,7 @@ public interface IUserController {
     Mono<Response<LoginUser>> login(@RequestBody User user);
 
     /**
-     * https://www.w3.org/TR/clear-site-data/
+     * <a href="https://www.w3.org/TR/clear-site-data/">注销协议规范</a>
      */
     @ApiOperation("注销")
     @PostMapping("/logout")

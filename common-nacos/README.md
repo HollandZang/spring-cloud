@@ -45,5 +45,5 @@ public static void main(String[]args){
 
 4. 配置监听
 ```java
-NacosPropKit.listen(NacosEnvironmentPostProcessor.configService, "你的Group", "你的Data Id", 监听函数());
+NacosPropKit.listen("你的NacosProp的字段名", 监听函数());
 ```

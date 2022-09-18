@@ -29,9 +29,11 @@ public class DateUtil {
         if (temporal instanceof LocalTime) {
             localDateTime = ((LocalTime) temporal).atDate(LocalDate.of(1970, Month.FEBRUARY, 1));
         }
+        //noinspection ConstantConditions
         return Date.from(localDateTime.toInstant(ZoneOffset.of("+8")));
     }
 
+    @SuppressWarnings("unchecked")
     public static <T extends Temporal> T toTemporal(String date, String pattern, Class<T> temporal) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
         if (temporal != null && "LocalDate".equals(temporal.getSimpleName())) {
