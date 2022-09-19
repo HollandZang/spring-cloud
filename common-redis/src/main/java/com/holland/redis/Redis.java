@@ -46,6 +46,9 @@ public class Redis {
     }
 
     public Lock lock(int seconds, String... lockName) {
+        if (lockName.length == 0)
+            throw new RuntimeException("lockName is empty!");
+
         final String key = Arrays.stream(lockName)
                 .reduce((s, s2) -> s + Lock.DEFAULT_LOCK_SPLIT + s2)
                 .orElse("null")

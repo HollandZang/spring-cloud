@@ -29,13 +29,13 @@ public class Lock implements AutoCloseable {
         if (locked) {
             final long useSeconds = (System.currentTimeMillis() - cTime) / 1000;
             if (useSeconds > seconds) {
-                logger.info("Hold lock timeout, key={}, time={}s, holdSeconds={}", key, seconds, useSeconds);
+                logger.error("Hold lock timeout, key={}, time={}s, holdSeconds={}", key, seconds, useSeconds);
                 return false;
             }
 
             final long l = redis.exec(15, jedis -> jedis.del(key));
             if (l == 0) {
-                logger.info("Release lock failed, key={}", key);
+                logger.error("Release lock failed, key={}", key);
                 return false;
             }
         }
@@ -47,13 +47,13 @@ public class Lock implements AutoCloseable {
         if (locked) {
             final long useSeconds = (System.currentTimeMillis() - cTime) / 1000;
             if (useSeconds > seconds) {
-                logger.info("Hold lock timeout, key={}, time={}s, holdSeconds={}", key, seconds, useSeconds);
+                logger.error("Hold lock timeout, key={}, time={}s, holdSeconds={}", key, seconds, useSeconds);
                 return;
             }
 
             final long l = redis.exec(15, jedis -> jedis.del(key));
             if (l == 0) {
-                logger.info("Release lock failed, key={}", key);
+                logger.error("Release lock failed, key={}", key);
             }
         }
     }
