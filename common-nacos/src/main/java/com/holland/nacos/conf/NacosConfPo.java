@@ -40,7 +40,7 @@ public class NacosConfPo {
             if (notEmpty(n) && notEmpty(g) && notEmpty(d))
                 set.add(new NacosConfPo(n, g, d, field));
             else
-                throw new RuntimeException("nacos conf is missing something");
+                throw new RuntimeException("nacos conf is missing something: " + new NacosConfPo(n, g, d, field));
         }
         return set;
     }
