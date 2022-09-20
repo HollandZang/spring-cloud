@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 
-public class NacosConfPo {
+public class NacosConfMeta {
     public final String namespace;
 
     public final String group;
@@ -16,15 +16,15 @@ public class NacosConfPo {
 
     public final Field field;
 
-    public NacosConfPo(String namespace, String group, String dataId, Field field) {
+    public NacosConfMeta(String namespace, String group, String dataId, Field field) {
         this.namespace = namespace;
         this.group = group;
         this.dataId = dataId;
         this.field = field;
     }
 
-    public static Set<NacosConfPo> genConfigs(String namespace, String group) {
-        Set<NacosConfPo> set = new HashSet<>();
+    public static Set<NacosConfMeta> genConfigs(String namespace, String group) {
+        Set<NacosConfMeta> set = new HashSet<>();
         for (Field field : NacosPropKit.INSTANCE.getDeclaredFields()) {
             if (!Modifier.isPublic(field.getModifiers())) continue;
             String n, d, g;
@@ -38,9 +38,9 @@ public class NacosConfPo {
             d = findVal(nacosConf != null, nacosConf.dataId(), field.getName());
 
             if (notEmpty(n) && notEmpty(g) && notEmpty(d))
-                set.add(new NacosConfPo(n, g, d, field));
+                set.add(new NacosConfMeta(n, g, d, field));
             else
-                throw new RuntimeException("nacos conf is missing something: " + new NacosConfPo(n, g, d, field));
+                throw new RuntimeException("nacos conf is missing something: " + new NacosConfMeta(n, g, d, field));
         }
         return set;
     }
@@ -62,7 +62,7 @@ public class NacosConfPo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        NacosConfPo that = (NacosConfPo) o;
+        NacosConfMeta that = (NacosConfMeta) o;
 
         if (!Objects.equals(namespace, that.namespace)) return false;
         if (!Objects.equals(group, that.group)) return false;
@@ -79,7 +79,7 @@ public class NacosConfPo {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", NacosConfPo.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", NacosConfMeta.class.getSimpleName() + "[", "]")
                 .add("namespace='" + namespace + "'")
                 .add("group='" + group + "'")
                 .add("dataId='" + dataId + "'")

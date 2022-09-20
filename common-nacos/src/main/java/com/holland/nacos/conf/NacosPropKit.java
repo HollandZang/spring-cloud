@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
-public abstract class NacosPropKit {
+public class NacosPropKit {
     protected static final Logger logger = LoggerFactory.getLogger(NacosPropKit.class);
 
     static Class<?> INSTANCE;
@@ -25,9 +25,9 @@ public abstract class NacosPropKit {
         INSTANCE = clazz;
     }
 
-    static void init(Map<String, ConfigService> configServiceMap, Set<NacosConfPo> nacosConfPos) throws NacosException, IOException, IllegalAccessException {
-        for (NacosConfPo po : nacosConfPos) {
-            ConfigService configService = configServiceMap.get(po.namespace);
+    static void init(Map<String, ConfigService> configServiceManager, Set<NacosConfMeta> nacosConfPos) throws NacosException, IOException, IllegalAccessException {
+        for (NacosConfMeta po : nacosConfPos) {
+            ConfigService configService = configServiceManager.get(po.namespace);
             final String content = configService.getConfig(po.dataId, po.group, 3000);
             if (content == null) {
                 logger.error("NacosProp.{} is null", po.dataId);
@@ -47,13 +47,13 @@ public abstract class NacosPropKit {
     public static void listen(String fieldName, Consumer<Properties> consumer) throws NacosException, NoSuchFieldException {
         final Field field = INSTANCE.getDeclaredField(fieldName);
         //noinspection OptionalGetWithoutIsPresent
-        final NacosConfPo po = NacosEnvironmentPostProcessor.nacosConfPos.stream()
+        final NacosConfMeta meta = NacosEnvironmentPostProcessor.nacosConfPos.stream()
                 .filter(p -> p.field.equals(field))
                 .findFirst()
                 .get();
-        final ConfigService configService = NacosEnvironmentPostProcessor.configServiceMap.get(po.namespace);
+        final ConfigService configService = NacosEnvironmentPostProcessor.configServiceManager.get(meta.namespace);
 
-        configService.addListener(po.dataId, po.group, new Listener() {
+        configService.addListener(meta.dataId, meta.group, new Listener() {
             @Override
             public Executor getExecutor() {
                 return null;
@@ -66,7 +66,7 @@ public abstract class NacosPropKit {
                     properties.load(new ByteArrayInputStream(configInfo.getBytes(StandardCharsets.UTF_8)));
                     field.set(INSTANCE, properties);
                     consumer.accept(properties);
-                    if (logger.isDebugEnabled()) logger.debug("refresh NacosProp.{}\n{}", po.dataId, configInfo);
+                    if (logger.isDebugEnabled()) logger.debug("refresh NacosProp.{}\n{}", meta.dataId, configInfo);
                 } catch (IOException | IllegalAccessException e) {
                     logger.error("更新配置异常", e);
                 }

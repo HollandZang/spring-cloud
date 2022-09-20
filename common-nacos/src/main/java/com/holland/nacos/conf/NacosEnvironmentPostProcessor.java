@@ -19,22 +19,22 @@ import java.util.Set;
 
 public class NacosEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
-    public static Map<String, ConfigService> configServiceMap;
-    public static Set<NacosConfPo> nacosConfPos;
+    public static Map<String, ConfigService> configServiceManager;
+    public static Set<NacosConfMeta> nacosConfPos;
     private String serverAddr;
 
-    private void init(Set<NacosConfPo> nacosConfPos) throws NacosException, IOException, IllegalAccessException {
-        configServiceMap = new HashMap<>(nacosConfPos.size());
-        for (NacosConfPo po : nacosConfPos) {
-            if (!configServiceMap.containsKey(po.namespace)) {
+    private void init(Set<NacosConfMeta> nacosConfPos) throws NacosException, IOException, IllegalAccessException {
+        configServiceManager = new HashMap<>(nacosConfPos.size());
+        for (NacosConfMeta meta : nacosConfPos) {
+            if (!configServiceManager.containsKey(meta.namespace)) {
                 final Properties properties = new Properties();
                 properties.put("serverAddr", serverAddr);
-                properties.put("namespace", po.namespace);
+                properties.put("namespace", meta.namespace);
                 ConfigService configService = NacosFactory.createConfigService(properties);
-                configServiceMap.put(po.namespace, configService);
+                configServiceManager.put(meta.namespace, configService);
             }
         }
-        NacosPropKit.init(configServiceMap, nacosConfPos);
+        NacosPropKit.init(configServiceManager, nacosConfPos);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class NacosEnvironmentPostProcessor implements EnvironmentPostProcessor {
         serverAddr = environment.getProperty("spring.cloud.nacos.config.server-addr");
         String namespace = environment.getProperty("spring.cloud.nacos.config.namespace");
         String group = environment.getProperty("spring.cloud.nacos.config.group");
-        nacosConfPos = NacosConfPo.genConfigs(namespace, group);
+        nacosConfPos = NacosConfMeta.genConfigs(namespace, group);
 
         try {
             init(nacosConfPos);
@@ -51,8 +51,8 @@ public class NacosEnvironmentPostProcessor implements EnvironmentPostProcessor {
         }
 
         MutablePropertySources propertySources = environment.getPropertySources();
-        for (NacosConfPo po : nacosConfPos) {
-            Field field = po.field;
+        for (NacosConfMeta meta : nacosConfPos) {
+            Field field = meta.field;
 
             Properties o;
             try {
@@ -61,7 +61,7 @@ public class NacosEnvironmentPostProcessor implements EnvironmentPostProcessor {
                 throw new RuntimeException(e);
             }
 
-            propertySources.addFirst(new PropertySource<Properties>(po.toString(), o) {
+            propertySources.addFirst(new PropertySource<Properties>(meta.toString(), o) {
                 @Override
                 public Object getProperty(@Nullable String name) {
                     return this.source.getProperty(name);
