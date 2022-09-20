@@ -24,7 +24,7 @@ public class NacosEnvironmentPostProcessor implements EnvironmentPostProcessor {
     private String serverAddr;
 
     private void init(Set<NacosConfMeta> nacosConfPos) throws NacosException, IOException, IllegalAccessException {
-        configServiceManager = new HashMap<>(nacosConfPos.size());
+        configServiceManager = new HashMap<>(8);
         for (NacosConfMeta meta : nacosConfPos) {
             if (!configServiceManager.containsKey(meta.namespace)) {
                 final Properties properties = new Properties();
