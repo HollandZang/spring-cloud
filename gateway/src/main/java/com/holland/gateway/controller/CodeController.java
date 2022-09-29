@@ -5,7 +5,7 @@ import com.holland.common.entity.gateway.Code;
 import com.holland.common.entity.gateway.CodeType;
 import com.holland.common.spring.apis.gateway.ICodeController;
 import com.holland.common.utils.Response;
-import com.holland.common.utils.ValidatorMysql;
+import com.holland.common.utils.Validator;
 import com.holland.gateway.common.CommCache;
 import com.holland.gateway.mapper.CodeMapper;
 import com.holland.gateway.mapper.CodeTypeMapper;
@@ -45,8 +45,8 @@ public class CodeController extends CommCache implements ICodeController {
 
     @Override
     public Mono<Response<Integer>> typeAdd(ServerHttpRequest request, @RequestBody CodeType codeType) {
-        new ValidatorMysql(codeType.getId(), "ID").notEmpty().lenLT(4);
-        new ValidatorMysql(codeType.getDes(), "描述").notEmpty().lenLT(256);
+        new Validator(codeType.getId(), "ID").notEmpty().lenLT(4);
+        new Validator(codeType.getDes(), "描述").notEmpty().lenLT(256);
         return Mono.defer(() -> {
             try (final Lock lock = redis.lock(CodeType.class, codeType.getId())) {
                 if (!lock.isLocked())
@@ -64,7 +64,7 @@ public class CodeController extends CommCache implements ICodeController {
 
     @Override
     public Mono<Response<List<Code>>> all(@PathVariable String type) {
-        new ValidatorMysql(type, "类别代码").notEmpty();
+        new Validator(type, "类别代码").notEmpty();
         return Mono.defer(() -> {
             final List<Code> codes = r_getOrReassign(() -> codeMapper.getByCode_type_id(type)
                     , "code", type);
@@ -74,10 +74,10 @@ public class CodeController extends CommCache implements ICodeController {
 
     @Override
     public Mono<Response<Integer>> add(ServerHttpRequest request, @RequestBody Code code) {
-        new ValidatorMysql(code.getVal(), "值").notEmpty().lenLT(256);
-        new ValidatorMysql(code.getVal(), "值1").notEmpty().lenLT(1024);
-        new ValidatorMysql(code.getCode_type_id(), "类别代码").notEmpty().lenLT(4);
-        new ValidatorMysql(code.getDes(), "描述").notEmpty().lenLT(256);
+        new Validator(code.getVal(), "值").notEmpty().lenLT(256);
+        new Validator(code.getVal(), "值1").notEmpty().lenLT(1024);
+        new Validator(code.getCode_type_id(), "类别代码").notEmpty().lenLT(4);
+        new Validator(code.getDes(), "描述").notEmpty().lenLT(256);
         return Mono.defer(() -> {
             try (final Lock lock = redis.lock(Code.class, code.getCode_type_id())) {
                 if (!lock.isLocked())

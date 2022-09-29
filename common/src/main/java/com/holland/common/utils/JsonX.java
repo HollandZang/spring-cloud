@@ -158,6 +158,7 @@ public class JsonX {
                     word = list.get(i);
                     res = actions.get(i).apply(res, word);
                 }
+                //noinspection unchecked
                 return (T) convert(res);
             } catch (Exception e) {
                 throw new RuntimeException("syntax error, keyword = " + word, e);

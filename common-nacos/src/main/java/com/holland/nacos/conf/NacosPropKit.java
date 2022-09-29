@@ -1,5 +1,6 @@
 package com.holland.nacos.conf;
 
+import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.alibaba.nacos.api.exception.NacosException;
@@ -10,34 +11,51 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 public class NacosPropKit {
-    protected static final Logger logger = LoggerFactory.getLogger(NacosPropKit.class);
+    private static final Logger logger = LoggerFactory.getLogger(NacosPropKit.class);
 
     static Class<?> INSTANCE;
+    /* [namespace, ConfigService] */
+    static Map<String, ConfigService> configServiceManager;
+    static Set<NacosConfMeta> nacosConfMetas;
 
     public static void setInstance(Class<?> clazz) {
         INSTANCE = clazz;
     }
 
-    static void init(Map<String, ConfigService> configServiceManager, Set<NacosConfMeta> nacosConfPos) throws NacosException, IOException, IllegalAccessException {
-        for (NacosConfMeta po : nacosConfPos) {
-            ConfigService configService = configServiceManager.get(po.namespace);
-            final String content = configService.getConfig(po.dataId, po.group, 3000);
+    /**
+     * @param serverAddr 配置环境的值
+     * @param namespace  配置环境的值
+     * @param group      配置环境的值
+     */
+    static void init(String serverAddr, String namespace, String group) throws NacosException, IOException, IllegalAccessException {
+        NacosPropKit.nacosConfMetas = NacosConfMeta.genConfigs(namespace, group);
+        NacosPropKit.configServiceManager = new HashMap<>(8);
+        for (NacosConfMeta meta : nacosConfMetas) {
+            if (!NacosPropKit.configServiceManager.containsKey(meta.namespace)) {
+                final Properties properties = new Properties();
+                properties.put("serverAddr", serverAddr);
+                properties.put("namespace", meta.namespace);
+                ConfigService configService = NacosFactory.createConfigService(properties);
+                NacosPropKit.configServiceManager.put(meta.namespace, configService);
+            }
+        }
+        for (NacosConfMeta meta : nacosConfMetas) {
+            ConfigService configService = configServiceManager.get(meta.namespace);
+            final String content = configService.getConfig(meta.dataId, meta.group, 3000);
             if (content == null) {
-                logger.error("NacosProp.{} is null", po.dataId);
+                logger.error("NacosProp.{} is null", meta.dataId);
                 continue;
             }
 
             final Properties properties = new Properties();
             properties.load(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
-            po.field.set(INSTANCE, properties);
-            if (logger.isDebugEnabled()) logger.debug("load NacosProp.{}\n{}", po, properties);
+            meta.field.set(INSTANCE, properties);
+            if (logger.isDebugEnabled()) logger.debug("load NacosProp.{}\n{}", meta, properties);
         }
     }
 
@@ -45,13 +63,8 @@ public class NacosPropKit {
      * @apiNote environment中只在初始化的时候赋值，监听修改environment是没意义的
      */
     public static void listen(String fieldName, Consumer<Properties> consumer) throws NacosException, NoSuchFieldException {
-        final Field field = INSTANCE.getDeclaredField(fieldName);
-        //noinspection OptionalGetWithoutIsPresent
-        final NacosConfMeta meta = NacosEnvironmentPostProcessor.nacosConfPos.stream()
-                .filter(p -> p.field.equals(field))
-                .findFirst()
-                .get();
-        final ConfigService configService = NacosEnvironmentPostProcessor.configServiceManager.get(meta.namespace);
+        final NacosConfMeta meta = findConfigService(fieldName);
+        final ConfigService configService = configServiceManager.get(meta.namespace);
 
         configService.addListener(meta.dataId, meta.group, new Listener() {
             @Override
@@ -64,7 +77,7 @@ public class NacosPropKit {
                 final Properties properties = new Properties();
                 try {
                     properties.load(new ByteArrayInputStream(configInfo.getBytes(StandardCharsets.UTF_8)));
-                    field.set(INSTANCE, properties);
+                    meta.field.set(INSTANCE, properties);
                     consumer.accept(properties);
                     if (logger.isDebugEnabled()) logger.debug("refresh NacosProp.{}\n{}", meta.dataId, configInfo);
                 } catch (IOException | IllegalAccessException e) {
@@ -72,5 +85,20 @@ public class NacosPropKit {
                 }
             }
         });
+    }
+
+    private static NacosConfMeta findConfigService(String fieldName) {
+        final Field field;
+        try {
+            field = INSTANCE.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+        Optional<NacosConfMeta> meta = nacosConfMetas.stream()
+                .filter(p -> p.field.equals(field))
+                .findFirst();
+        if (!meta.isPresent())
+            throw new RuntimeException("can not found NacosConfMeta from the filed: " + fieldName);
+        return meta.get();
     }
 }

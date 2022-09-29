@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 
-public class NacosConfMeta {
+class NacosConfMeta {
     public final String namespace;
 
     public final String group;

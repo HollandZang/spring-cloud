@@ -19,13 +19,14 @@ public class EvalX {
         final String expressions = "1==1 && s'data[0]uid=='157580' && 1==2";
 
         final Object exec = new EvalX().exec(expressions, jsonX);
-        System.out.println(exec);
+        System.out.println(exec.getClass().getSimpleName() + ": " + exec);
     }
 
     public <T> T exec(String expressions) {
         return exec(expressions, null);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T exec(String expressions, JsonX jsonX) {
         if (expressions == null || expressions.isEmpty()) return null;
 
@@ -34,17 +35,13 @@ public class EvalX {
         if (triples.isEmpty()) {
             return (T) setIt(expressions.toCharArray(), jsonX);
         }
-//        System.out.println(triples);
-        Object val = getVal(triples);
-//        System.out.println(val);
-        return (T) val;
+        return (T) getVal(triples);
     }
 
     private List<Triple> getTriples(String expressions, JsonX jsonX) {
         final String reg = Arrays.stream(Keywords.values())
                 .map(keywords -> keywords.reg)
                 .collect(Collectors.joining("|"));
-//        System.out.println(reg);
         final Pattern pattern = Pattern.compile(reg);
         final Matcher matcher = pattern.matcher(expressions);
         int i = 0;
@@ -98,12 +95,8 @@ public class EvalX {
         while (!stack.empty()) {
             final Object pre = stack.pop();
             if (pre instanceof Keywords) {
-//                if (pre.equals(Keywords.not)) {
-//                    a = ((Keywords) pre).getAction().apply(null, a);
-//                } else {
                 final Object preA = stack.pop();
                 a = ((Keywords) pre).getAction().apply(preA, a);
-//                }
             } else {
                 throw new EvalXException("OUT OF EXPECTATION!");
             }

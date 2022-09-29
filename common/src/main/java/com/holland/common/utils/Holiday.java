@@ -47,10 +47,9 @@ public class Holiday {
                                 for (Object obj : arr) {
                                     JsonX json = new JsonX(obj);
                                     if (new EvalX().exec("status=='1'", json)) {
-                                        //noinspection MalformedFormatString
                                         String key = json.find("year")
-                                                + String.format("%02d", (Object) json.find("i'month"))
-                                                + String.format("%02d", (Object) json.find("i'day"));
+                                                + String.format("%02d", json.<Integer>find("i'month"))
+                                                + String.format("%02d", json.<Integer>find("i'day"));
                                         list.add(key + "-" + json.find("term"));
                                     }
                                 }
