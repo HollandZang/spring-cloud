@@ -14,33 +14,33 @@ import java.lang.reflect.Type;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class Email {
+public class Port {
 
-    public String value;
+    public Integer value;
 
     public boolean validate() {
-        return value.matches("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$");
+        return value.toString().matches("^([0-9]|[1-9]\\d{1,3}|[1-5]\\d{4}|6[0-4]\\d{4}|65[0-4]\\d{2}|655[0-2]\\d|6553[0-5])$");
     }
 
     static {
-        EmailSerializer serializer = new EmailSerializer();
-        SerializeConfig.globalInstance.put(Email.class, serializer);
-        ParserConfig.global.putDeserializer(Email.class, serializer);
+        PortSerializer serializer = new PortSerializer();
+        SerializeConfig.globalInstance.put(Port.class, serializer);
+        ParserConfig.global.putDeserializer(Port.class, serializer);
     }
 
-    public static class EmailSerializer implements ObjectSerializer, ObjectDeserializer {
+    public static class PortSerializer implements ObjectSerializer, ObjectDeserializer {
 
         @SuppressWarnings("unchecked")
         @Override
-        public Email deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
+        public Port deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
             Object parse = parser.parse();
-            return new Email((String) parse);
+            return new Port((Integer) parse);
         }
 
         @Override
         public void write(JSONSerializer serializer, Object object, Object fieldName, Type fieldType, int features) {
             SerializeWriter out = serializer.getWriter();
-            out.write('"' + ((Email) object).value + '"');
+            out.write('"' + ((Port) object).value + '"');
         }
 
         @Override
@@ -51,6 +51,6 @@ public class Email {
 
     @Override
     public String toString() {
-        return value;
+        return value.toString();
     }
 }
