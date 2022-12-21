@@ -30,6 +30,11 @@
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
         </dependency>
+        <!--
+            由于netflix组件进入维护模式，spring cloud 2020.0.x开始移除netflix相关组件，
+            当使用lb://SERVICE时，spring cloud gateway中由于缺少原有的ribbon负载均衡组件，而导致服务不可用。
+            添加相关负载均衡依赖spring-cloud-starter-loadbalancer
+        -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-loadbalancer</artifactId>
