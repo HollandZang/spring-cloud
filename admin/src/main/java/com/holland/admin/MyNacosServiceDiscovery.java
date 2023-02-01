@@ -35,10 +35,12 @@ public class MyNacosServiceDiscovery extends NacosServiceDiscovery {
         {
             serviceInstances.forEach(serviceInstance -> {
                 Map<String, String> metadata = serviceInstance.getMetadata();
-                String visitUrl = metadata.get("visitHost");
-                if (StringUtils.hasText(visitUrl)) {
-                    metadata.put("host", serviceInstance.getHost());
-                    ((NacosServiceInstance) serviceInstance).setHost(visitUrl);
+                String ipInternet = metadata.get("ip.internet");
+                if (StringUtils.hasText(ipInternet)) {
+                    if (!metadata.containsKey("ip.local")) {
+                        metadata.put("host", serviceInstance.getHost());
+                    }
+                    ((NacosServiceInstance) serviceInstance).setHost(ipInternet);
                 }
             });
         }
