@@ -20,9 +20,17 @@ import java.util.Map;
 @Api(tags = "用户模块")
 @RequestMapping("/user")
 public interface IUserController {
-    @ApiOperation("获取用户列表")
+    @ApiOperation("获取用户列表-listAndTotal")
+    @PostMapping("/listAndTotal")
+    Mono<Response<List<Map<String, Object>>>> listAndTotal(@RequestBody Page<Map<String, Object>> page);
+
+    @ApiOperation("获取用户列表-list")
     @PostMapping("/list")
     Mono<Response<List<Map<String, Object>>>> list(@RequestBody Page<Map<String, Object>> page);
+
+    @ApiOperation("获取用户列表-total")
+    @PostMapping("/total")
+    Mono<Response<Long>> total(@RequestBody Map<String, Object> param);
 
     @ApiOperation("登录")
     @PostMapping("/login")
