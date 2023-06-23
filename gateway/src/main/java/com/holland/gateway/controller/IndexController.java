@@ -7,6 +7,8 @@ import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.conf.EmailService;
 import com.holland.gateway.mapper.MiniappMapper;
 import com.holland.gateway.mapper.UserMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -19,7 +21,9 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.Map;
 
+@Slf4j
 @Controller
 @RequestMapping()
 public class IndexController {
@@ -37,6 +41,9 @@ public class IndexController {
 
     @GetMapping()
     public Mono<ResponseEntity<?>> test(ServerHttpRequest req) {
+        String id = req.getId();
+        Map<String, String> copyOfContextMap = MDC.getCopyOfContextMap();
+        log.info("test run!");
         Miniapp wx27abd25e951e1c5c = miniappMapper.selectById("wx27abd25e951e1c5c");
 
 //        final String forObject = restTemplate.getForObject("http://gateway/call", String.class);

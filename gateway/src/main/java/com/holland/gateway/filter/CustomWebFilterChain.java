@@ -1,6 +1,5 @@
 package com.holland.gateway.filter;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.holland.common.aggregate.CacheUser;
 import com.holland.common.entity.gateway.Log;
@@ -11,12 +10,11 @@ import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.mapper.CodeMapper;
 import com.holland.gateway.swagger.SwaggerRouteFilter;
 import com.holland.gateway.swagger.SwaggerUtils;
-import com.holland.kafka.Producer;
-import com.holland.kafka.Topic;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -35,6 +33,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.server.WebFilter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
@@ -82,6 +81,22 @@ public class CustomWebFilterChain {
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
             request = RequestUtil.setCacheUser(request);
+            MDC.put("uid", request.getId());
+
+            Schedulers.onScheduleHook("mdc", runnable -> {
+                Map<String, String> map = MDC.getCopyOfContextMap();
+                return () -> {
+                    if (map != null) {
+                        MDC.setContextMap(map);
+                    }
+                    try {
+                        runnable.run();
+                    } finally {
+                        MDC.clear();
+                    }
+                };
+            });
+
             return chain.filter(exchange.mutate().request(request).build());
         };
     }
