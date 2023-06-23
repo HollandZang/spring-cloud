@@ -4,6 +4,7 @@ import com.alibaba.cloud.commons.lang.StringUtils;
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import com.holland.common.plugin.mybaties.MyPageInterceptor;
 import com.holland.common.spring.AuthCheck;
 import com.holland.common.spring.AuthCheckMapping;
 import com.holland.common.spring.configuration.GlobalExceptionHandle;
@@ -28,7 +29,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Import(GlobalExceptionHandle.class)
+@Import({GlobalExceptionHandle.class, MyPageInterceptor.class})
 @Configuration
 public class HollandConf {
     @Resource

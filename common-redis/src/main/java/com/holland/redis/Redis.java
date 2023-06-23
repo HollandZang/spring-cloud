@@ -57,9 +57,15 @@ public class Redis {
         final Jedis jedis = jedisPool.getResource();
         jedis.select(15);
         if (jedis.get(key) == null) {
-            jedis.setex(key, seconds, "1");
-            jedisPool.returnResource(jedis);
-            return new Lock(key, seconds, this, true);
+            Long setnx = jedis.setnx(key, "1");
+            if (setnx > 0) {
+                jedis.expire(key, seconds);
+                jedis.close();
+                return new Lock(key, seconds, this, true);
+            } else {
+                jedis.close();
+                return new Lock(key, seconds, this, false);
+            }
         } else {
             jedisPool.returnResource(jedis);
             return new Lock(key, seconds, this, false);

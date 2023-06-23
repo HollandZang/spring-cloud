@@ -34,8 +34,8 @@ public class MyPageInterceptor implements Interceptor {
             String sql = boundSql.getSql();
 
             MyPageHelper myPageHelper = helper.get();
-            int pageNum = myPageHelper.getPageNum();
-            int pageSize = myPageHelper.getPageSize();
+            long pageNum = myPageHelper.getPageNum();
+            long pageSize = myPageHelper.getPageSize();
             sql = "select t.* from (" + sql + ") t limit " + ((pageNum - 1) * pageSize) + "," + (pageSize + 1);
 
             BoundSql bs = new BoundSql(ms.getConfiguration(), sql, boundSql.getParameterMappings(), parameterObject);

@@ -11,6 +11,7 @@ import com.holland.gateway.mapper.CodeMapper;
 import com.holland.gateway.swagger.SwaggerRouteFilter;
 import com.holland.gateway.swagger.SwaggerUtils;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,8 @@ public class CustomWebFilterChain {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
+//                .addFilterAt(clientSecurityFilter(), SecurityWebFiltersOrder.FIRST)
+                .addFilterAt(cachedFilter(), SecurityWebFiltersOrder.HTTP_HEADERS_WRITER)
                 .authorizeExchange(authorizeExchangeSpec -> {
                     authorizeExchangeSpec
                             .pathMatchers("/actuator/**").authenticated()
@@ -77,7 +80,20 @@ public class CustomWebFilterChain {
         return http.build();
     }
 
-    private WebFilter firstFilter() {
+    private WebFilter clientSecurityFilter() {
+        return (exchange, chain) -> {
+            String serRdm = exchange.getRequest().getHeaders().getFirst("SER-RDM");
+            if (StringUtils.equals("testDrm", serRdm)) {
+                return chain.filter(exchange);
+            } else {
+                ServerHttpResponse response = exchange.getResponse();
+                response.setStatusCode(HttpStatus.UNAUTHORIZED);
+                return response.setComplete();
+            }
+        };
+    }
+
+    private WebFilter cachedFilter() {
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
             request = RequestUtil.setCacheUser(request);

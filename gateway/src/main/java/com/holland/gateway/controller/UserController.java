@@ -7,6 +7,7 @@ import com.holland.common.aggregate.LoginUser;
 import com.holland.common.entity.gateway.User;
 import com.holland.common.entity.gateway.UserRole;
 import com.holland.common.enums.gateway.RoleEnum;
+import com.holland.common.plugin.mybaties.MyPageHelper;
 import com.holland.common.spring.AuthCheck;
 import com.holland.common.spring.apis.gateway.IUserController;
 import com.holland.common.utils.Response;
@@ -46,10 +47,24 @@ public class UserController implements IUserController {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(8);
 
     @Override
-    public Mono<Response<List<Map<String, Object>>>> list(@RequestBody Page<Map<String, Object>> page) {
+    public Mono<Response<List<Map<String, Object>>>> listAndTotal(@RequestBody Page<Map<String, Object>> page) {
         final Page<Map<String, Object>> records = userMapper.selectMapsPage(page, new QueryWrapper<User>()
                 .select("login_name", "create_time", "update_time"));
         return Mono.defer(() -> Mono.just(Response.success(records)));
+    }
+
+    @Override
+    public Mono<Response<List<Map<String, Object>>>> list(Page<Map<String, Object>> page) {
+        MyPageHelper.startPage(page);
+        List<Map<String, Object>> users = userMapper.selectMaps(new QueryWrapper<User>()
+                .select("login_name", "create_time", "update_time"));
+        return Mono.defer(() -> Mono.just(Response.success(users)));
+    }
+
+    @Override
+    public Mono<Response<Long>> total(Map<String, Object> param) {
+        Long count = userMapper.selectCount(new QueryWrapper<User>());
+        return Mono.defer(() -> Mono.just(Response.success(count)));
     }
 
     @Override
