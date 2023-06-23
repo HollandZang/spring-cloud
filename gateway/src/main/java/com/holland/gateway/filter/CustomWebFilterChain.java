@@ -61,8 +61,6 @@ public class CustomWebFilterChain {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
-//                .addFilterAt(clientSecurityFilter(), SecurityWebFiltersOrder.FIRST)
-                .addFilterAt(cachedFilter(), SecurityWebFiltersOrder.HTTP_HEADERS_WRITER)
                 .authorizeExchange(authorizeExchangeSpec -> {
                     authorizeExchangeSpec
                             .pathMatchers("/actuator/**").authenticated()
@@ -80,20 +78,7 @@ public class CustomWebFilterChain {
         return http.build();
     }
 
-    private WebFilter clientSecurityFilter() {
-        return (exchange, chain) -> {
-            String serRdm = exchange.getRequest().getHeaders().getFirst("SER-RDM");
-            if (StringUtils.equals("testDrm", serRdm)) {
-                return chain.filter(exchange);
-            } else {
-                ServerHttpResponse response = exchange.getResponse();
-                response.setStatusCode(HttpStatus.UNAUTHORIZED);
-                return response.setComplete();
-            }
-        };
-    }
-
-    private WebFilter cachedFilter() {
+    private WebFilter firstFilter() {
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
             request = RequestUtil.setCacheUser(request);
