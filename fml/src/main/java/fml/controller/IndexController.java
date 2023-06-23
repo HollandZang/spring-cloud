@@ -15,9 +15,13 @@ public class IndexController {
     @Value("${spring.application.name}")
     private String name;
 
-    @GetMapping()
-    public Mono<ResponseEntity<?>> test() {
-        return Mono.defer(() -> Mono.just(name + "::OK\n" + new Date()))
-                .map(it -> ResponseEntity.ok().body(it));
+    @GetMapping("/index")
+    public ResponseEntity<?> test() {
+        return ResponseEntity.ok().body("hello index");
+    }
+
+    @GetMapping("/indexAuth")
+    public ResponseEntity<?> indexAuth() {
+        return ResponseEntity.ok().body("hello indexAuth");
     }
 }

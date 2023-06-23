@@ -5,10 +5,12 @@ import com.holland.common.spring.apis.email.IEmailController;
 import com.holland.common.utils.Response;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
 import java.util.Properties;
 
 @RestController
@@ -21,7 +23,7 @@ public class EmailController implements IEmailController {
     }
 
     @Override
-    public Mono<Response<?>> send(@RequestBody MailSend mailSend) {
+    public Mono<Response<?>> send(@Valid @RequestBody MailSend mailSend) {
         return Mono.defer(() -> {
             switch (mailSend.sender.host) {
                 case NETEASE_163:

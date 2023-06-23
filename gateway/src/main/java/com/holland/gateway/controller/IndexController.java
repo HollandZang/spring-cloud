@@ -1,8 +1,12 @@
 package com.holland.gateway.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.holland.common.entity.gateway.User;
 import com.holland.common.utils.Response;
 import com.holland.gateway.common.RequestUtil;
 import com.holland.gateway.conf.EmailService;
+import com.holland.gateway.mapper.MiniappMapper;
+import com.holland.gateway.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -28,9 +32,13 @@ public class IndexController {
     private WebClient.Builder webClient;
 //    @Resource
 //    private EmailService emailService;
+    @Resource
+    private MiniappMapper miniappMapper;
 
     @GetMapping()
     public Mono<ResponseEntity<?>> test(ServerHttpRequest req) {
+        Miniapp wx27abd25e951e1c5c = miniappMapper.selectById("wx27abd25e951e1c5c");
+
 //        final String forObject = restTemplate.getForObject("http://gateway/call", String.class);
 //        System.out.println("restTemplate call::" + forObject);
 
@@ -51,7 +59,7 @@ public class IndexController {
 //        } catch (InterruptedException e) {
 //            throw new RuntimeException(e);
 //        }
-        return Mono.defer(() -> Mono.just(name + "::OK\n" + new Date()))
+        return Mono.defer(() -> Mono.just(JSON.toJSONString(wx27abd25e951e1c5c)))
                 .map(it -> ResponseEntity.ok().body(it));
     }
 

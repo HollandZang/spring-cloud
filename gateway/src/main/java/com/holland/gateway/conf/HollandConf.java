@@ -83,7 +83,7 @@ public class HollandConf {
         return interceptor;
     }
 
-    @Bean
+//    @Bean
     public Producer kafkaProducer(@Value("${kafka.server}") String server
             , @Value("{kafka.groupId}") String groupId) {
         return new Producer(server, groupId);

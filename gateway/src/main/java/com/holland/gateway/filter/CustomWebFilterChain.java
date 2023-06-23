@@ -47,8 +47,8 @@ public class CustomWebFilterChain {
     @Resource
     private SwaggerUtils swaggerUtils;
 
-    @Resource
-    private Producer kafkaProducer;
+//    @Resource
+//    private Producer kafkaProducer;
 
     @Resource
     private AuthCheckMapping authCheckMapping;
@@ -61,6 +61,12 @@ public class CustomWebFilterChain {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
+                .authorizeExchange(authorizeExchangeSpec -> {
+                    authorizeExchangeSpec
+                            .pathMatchers("/actuator/**").authenticated()
+                            .anyExchange().permitAll()
+                    ;
+                })
                 .addFilterAt(firstFilter(), SecurityWebFiltersOrder.FIRST)
                 .addFilterAt(SwaggerRouteFilter.getWebFilter(swaggerUtils), SecurityWebFiltersOrder.HTTP_HEADERS_WRITER)
 //                .addFilterAt(corsFilter(), SecurityWebFiltersOrder.CORS)
@@ -191,7 +197,7 @@ public class CustomWebFilterChain {
                 .setResData(respBody);
 
         try {
-            kafkaProducer.exec(Topic.op_log, JSON.toJSONString(log));
+//            kafkaProducer.exec(Topic.op_log, JSON.toJSONString(log));
         } catch (Exception e) {
             logger.error(request.getId() + " log->'log'", e);
         }
@@ -213,7 +219,7 @@ public class CustomWebFilterChain {
                 .setResBody(respBody);
 
         try {
-            kafkaProducer.exec(Topic.login_log, JSON.toJSONString(logLogin));
+//            kafkaProducer.exec(Topic.login_log, JSON.toJSONString(logLogin));
         } catch (Exception e) {
             logger.error(request.getId() + " log->'logLogin'", e);
         }
@@ -233,7 +239,7 @@ public class CustomWebFilterChain {
                 .setResBody(respBody);
 
         try {
-            kafkaProducer.exec(Topic.login_log, JSON.toJSONString(logLogin));
+//            kafkaProducer.exec(Topic.login_log, JSON.toJSONString(logLogin));
         } catch (Exception e) {
             logger.error(request.getId() + " log->'logLogout'", e);
         }
