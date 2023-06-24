@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <property name="LOGS" value="./logs/gateway"/>
+    <springProperty name="applicationName" source="spring.application.name"/>
+
     <property name="NAME" value="core"/>
     <property name="CACHE" value="cache"/>
     <property name="KAFKA" value="kafka"/>
@@ -17,7 +18,7 @@
 
     <appender name="CoreFile"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOGS}/${NAME}.log</file>
+        <file>./logs/${applicationName}/${NAME}.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <Pattern>
                 %d{ISO8601} %-5level [%30.30t] %20.20C %-4L: %msg%n%throwable
@@ -27,7 +28,7 @@
         <rollingPolicy
                 class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- rollover daily and when the file reaches 10 MegaBytes -->
-            <fileNamePattern>${LOGS}/archived/${NAME}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>./logs/${applicationName}/archived/${NAME}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>10MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
@@ -36,7 +37,7 @@
 
     <appender name="CacheFile"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOGS}/${CACHE}.log</file>
+        <file>./logs/${applicationName}/${CACHE}.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <Pattern>
                 %d{ISO8601} %msg%n
@@ -46,7 +47,7 @@
         <rollingPolicy
                 class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- rollover daily and when the file reaches 10 MegaBytes -->
-            <fileNamePattern>${LOGS}/archived/${CACHE}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>./logs/${applicationName}/archived/${CACHE}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>10MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
@@ -55,7 +56,7 @@
 
     <appender name="KafkaFile"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOGS}/${KAFKA}.log</file>
+        <file>./logs/${applicationName}/${KAFKA}.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <Pattern>
                 %d{ISO8601} %msg%n
@@ -65,30 +66,45 @@
         <rollingPolicy
                 class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- rollover daily and when the file reaches 10 MegaBytes -->
-            <fileNamePattern>${LOGS}/archived/${KAFKA}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>./logs/${applicationName}/archived/${KAFKA}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>10MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
     </appender>
 
-    <!-- LOG everything at INFO level -->
-    <root level="info">
-        <appender-ref ref="Console"/>
-        <!--        <appender-ref ref="CoreFile"/>-->
-    </root>
+    <springProfile name="dev">
+        <root level="info">
+            <appender-ref ref="Console"/>
+        </root>
 
-    <logger name="com.holland.redis.Redis" additivity="false" level="TRACE">
-        <appender-ref ref="Console"/>
-        <!--        <appender-ref ref="CacheFile"/>-->
-    </logger>
+        <logger name="com.holland.redis.Redis" additivity="false" level="TRACE">
+            <appender-ref ref="Console"/>
+        </logger>
 
-    <logger name="com.holland.kafka.Producer" additivity="false" level="DEBUG">
-        <appender-ref ref="Console"/>
-        <!--        <appender-ref ref="KafkaFile"/>-->
-    </logger>
-    <logger name="com.holland.kafka.Consumer" additivity="false" level="DEBUG">
-        <appender-ref ref="Console"/>
-        <!--        <appender-ref ref="KafkaFile"/>-->
-    </logger>
+        <logger name="com.holland.kafka.Producer" additivity="false" level="DEBUG">
+            <appender-ref ref="Console"/>
+        </logger>
+        <logger name="com.holland.kafka.Consumer" additivity="false" level="DEBUG">
+            <appender-ref ref="Console"/>
+        </logger>
+    </springProfile>
+
+    <springProfile name="dev">
+        <root level="info">
+            <appender-ref ref="CoreFile"/>
+        </root>
+
+        <logger name="com.holland.redis.Redis" additivity="false" level="TRACE">
+            <appender-ref ref="CacheFile"/>
+        </logger>
+
+        <logger name="com.holland.kafka.Producer" additivity="false" level="DEBUG">
+            <appender-ref ref="KafkaFile"/>
+        </logger>
+        <logger name="com.holland.kafka.Consumer" additivity="false" level="DEBUG">
+            <appender-ref ref="KafkaFile"/>
+        </logger>
+    </springProfile>
+
 </configuration>
