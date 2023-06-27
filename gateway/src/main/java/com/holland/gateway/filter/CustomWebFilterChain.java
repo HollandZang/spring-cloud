@@ -11,7 +11,6 @@ import com.holland.gateway.mapper.CodeMapper;
 import com.holland.gateway.swagger.SwaggerRouteFilter;
 import com.holland.gateway.swagger.SwaggerUtils;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,16 +54,19 @@ public class CustomWebFilterChain {
 
     @Resource
     private CodeMapper codeMapper;
+    @Resource
+    private SecurityContextRepository securityContextRepository;
 
     private final Logger logger = LoggerFactory.getLogger(CustomWebFilterChain.class);
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
+                .securityContextRepository(securityContextRepository)
                 .authorizeExchange(authorizeExchangeSpec -> {
                     authorizeExchangeSpec
                             .pathMatchers("/actuator/**").authenticated()
-                            .anyExchange().permitAll()
+                            .anyExchange().hasRole("ADMIN")
                     ;
                 })
                 .addFilterAt(firstFilter(), SecurityWebFiltersOrder.FIRST)
@@ -74,6 +76,9 @@ public class CustomWebFilterChain {
                                 .filterByProperties()
                         , SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAt(logFilter(), SecurityWebFiltersOrder.LAST)
+//                .httpBasic().disable()
+//                .formLogin().disable()
+//                .logout().disable()
                 .csrf(ServerHttpSecurity.CsrfSpec::disable);
         return http.build();
     }
