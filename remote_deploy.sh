@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ssh 连接服务器
-SSH_IP=114.115.212.83
+SSH_IP=localhost.vv
 SSH_PORT=22
 
 # 部署路径
@@ -209,30 +209,30 @@ main() {
   echo -e "\033[31;40m> 远程部署结束 \033[0m"
 }
 
-#main
+main
 
-JAR_NAME=gateway-0.0.1-SNAPSHOT.jar
-ssh root@$SSH_IP -p $SSH_PORT bash -c "
-cd $DEPLOY_PATH
-# 启动备份，用备份端口
-  # 端口从tartget/classes/配置文件获取
-  # 根据类型yml、properties执行不同的解析
-  # 优先根据spring.profiles.active来查端口
-# 停用已启动的
-
-ps -ef|grep $JAR_NAME|grep -v grep|awk '{print \$2}'
-
-pid=\$(ps -ef|grep $JAR_NAME|grep -v grep|awk '{print \$2}')
-echo pid=\$pid
-if [ -n \$pid ]
-  then
-    echo pid进程 :\$pid
-    kill -9 \$pid
-    echo kill $JAR_NAME :\$pid
- else
-    echo 进程没有启动
-fi
-# 启动最新包
-#java -Dloader.path=libs/ -jar gateway-0.0.1-SNAPSHOT.jar
-# 停用备份
-"
+#JAR_NAME=gateway-0.0.1-SNAPSHOT.jar
+#ssh root@$SSH_IP -p $SSH_PORT bash -c "
+#cd $DEPLOY_PATH
+## 启动备份，用备份端口
+#  # 端口从tartget/classes/配置文件获取
+#  # 根据类型yml、properties执行不同的解析
+#  # 优先根据spring.profiles.active来查端口
+## 停用已启动的
+#
+#ps -ef|grep $JAR_NAME|grep -v grep|awk '{print \$2}'
+#
+#pid=\$(ps -ef|grep $JAR_NAME|grep -v grep|awk '{print \$2}')
+#echo pid=\$pid
+#if [ -n \$pid ]
+#  then
+#    echo pid进程 :\$pid
+#    kill -9 \$pid
+#    echo kill $JAR_NAME :\$pid
+# else
+#    echo 进程没有启动
+#fi
+## 启动最新包
+##java -Dloader.path=libs/ -jar gateway-0.0.1-SNAPSHOT.jar
+## 停用备份
+#"

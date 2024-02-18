@@ -16,6 +16,12 @@ spring:
 #    include: admin
   cloud:
     gateway:
+      httpclient:
+        connect-timeout: 200
+        response-timeout: PT20S
+        pool:
+          max-idle-time: PT10S
+          eviction-interval: PT30S
       discovery:
         locator:
           enabled: true
